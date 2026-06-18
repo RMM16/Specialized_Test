@@ -29,13 +29,20 @@ Capas dependientes de Zephyr:
 - `runtime.c`
 - `zephyr_app_config.c`
 
-### 2.2 Estrategia de validacion
+### 2.2 Alcance CAN
+
+- la implementacion usara CAN clasico
+- se trabajara con `struct can_frame`
+- no se implementara CAN-FD
+- no se contemplan `BRS`, `FDF` ni comportamiento especifico de tramas FD
+
+### 2.3 Estrategia de validacion
 
 - `unit_testing` para la logica portable
 - `native_sim` para arranque local y smoke test
 - `loopback` CAN en `native_sim` para validar RX/TX sin hardware
 
-### 2.3 Estrategia de commits
+### 2.4 Estrategia de commits
 
 - commits pequenos
 - una funcionalidad por rama
@@ -122,6 +129,7 @@ Specialized_Test/
 
 - `runtime.c`
   Integra CAN, timers, RX queue, timestamps, UART/console y llamadas al nucleo portable.
+  La fuente de timestamp sera `k_uptime_get()` o `k_uptime_get_32()`, expresado en milisegundos desde boot.
 
 ### 4.4 Tests
 
@@ -258,6 +266,12 @@ Introducir toda la configuracion que debe estar disponible en build-time.
 - `STOP_TRIGGER_ENABLE`, `STOP_TRIGGER_ID`
 - `HELLO_TRIGGER_ENABLE`, `HELLO_TRIGGER_ID`
 
+### Restricciones de configuracion
+
+- los triggers no pueden colisionar entre si
+- un `TX_ID` no puede coincidir con un `START_TRIGGER_ID`, `STOP_TRIGGER_ID` o `HELLO_TRIGGER_ID`
+- las validaciones se implementaran en `app_config_model`
+
 ### Entregables
 
 - opciones `Kconfig`
@@ -298,6 +312,7 @@ Crear el nucleo portable y estable de la solucion.
 - accion `hello specialized`
 - validacion de configuracion
 - serializacion de mensaje CAN a string de salida
+- tratamiento del timestamp como milisegundos desde boot
 
 ### Validacion
 
@@ -325,6 +340,7 @@ Cerrar cobertura sobre la parte importante antes de tocar CAN real y concurrenci
 - periodo invalido igual a cero
 - IDs fuera de rango
 - conflicto de triggers
+- colision entre un `TX_ID` y un trigger
 - configuracion con triggers deshabilitados
 
 #### `test_app_logic.c`
@@ -578,6 +594,7 @@ Crear rama `docs/setup-build-guide` y cerrar documentacion.
 - que la logica portable empiece a depender de Zephyr
 - que el formatter cambie formato y rompa tests
 - que un trigger interfiera con otro
+- que un `TX_ID` coincida con un trigger y active comportamiento no deseado
 - que el hilo de impresion bloquee el runtime
 - que loopback funcione en `native_sim` pero no quede desacoplado para target real
 
