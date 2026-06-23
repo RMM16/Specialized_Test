@@ -42,14 +42,24 @@ La limitacion pendiente del PC es que WSL2 no puede arrancar porque la virtualiz
 
 ## Siguiente hito
 
-El siguiente hito tecnico es la `Rama 2`: hacer que la app imprima un mensaje visible y validar ejecucion, no solo compilacion.
+La `Rama 2` valida que la app arranca y que la consola funciona mediante un
+`printk` minimo:
 
-Validacion esperada:
+```text
+*** Booting Zephyr OS build v4.4.0 ***
+Specialized Test booted on native_sim
+```
+
+Se usa el qualifier oficial `native_sim/native/64` porque el target
+`native_sim` por defecto genera un ELF de 32 bits que compila correctamente,
+pero no puede ejecutarse sobre el WSL1 disponible en este PC.
+
+Validacion:
 
 ```bash
 export PATH=/root/miniconda/bin:$PATH
 export ZEPHYR_TOOLCHAIN_VARIANT=host
 cd /mnt/c/Workspaces
-west build -p always -b native_sim Specialized_Test/app
+west build -p always -b native_sim/native/64 Specialized_Test/app
 west build -t run
 ```

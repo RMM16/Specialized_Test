@@ -15,6 +15,24 @@ west build -p always -b native_sim Specialized_Test/app
 
 Resultado: build correcto con Zephyr `v4.4.0`.
 
+El target por defecto genera un ejecutable ELF de 32 bits. Para compilar y
+ejecutar la aplicacion en este PC se usa la variante oficial de 64 bits:
+
+```bash
+west build -p always -b native_sim/native/64 Specialized_Test/app
+west build -t run
+```
+
+Salida validada:
+
+```text
+*** Booting Zephyr OS build v4.4.0 ***
+Specialized Test booted on native_sim
+```
+
+El proceso del simulador permanece activo despues de que `main` retorna porque
+Zephyr continua ejecutando el kernel. Esto es comportamiento esperado.
+
 ## Restriccion del PC
 
 WSL2 no puede usarse ahora mismo porque la virtualizacion esta desactivada en BIOS/UEFI:
@@ -126,7 +144,7 @@ Dentro de Ubuntu:
 export PATH=/root/miniconda/bin:$PATH
 export ZEPHYR_TOOLCHAIN_VARIANT=host
 cd /mnt/c/Workspaces
-west build -p always -b native_sim Specialized_Test/app
+west build -p always -b native_sim/native/64 Specialized_Test/app
 ```
 
 ## Por que no se usa Zephyr SDK completo todavia
