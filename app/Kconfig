@@ -1,0 +1,3 @@
+mainmenu "Specialized Test Application"
+
+source "Kconfig.zephyr"
