@@ -1,0 +1,42 @@
+name: build-and-test
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  native_sim:
+    runs-on: ubuntu-22.04
+    container:
+      image: zephyrprojectrtos/ci:latest
+      options: --user root
+    steps:
+      - name: Checkout manifest repo
+        uses: actions/checkout@v4
+        with:
+          path: Specialized_Test
+
+      - name: Cache west workspace
+        uses: actions/cache@v4
+        with:
+          path: |
+            zephyr
+            modules
+            bootloader
+            tools
+          key: west-${{ hashFiles('Specialized_Test/west.yml') }}
+
+      - name: Initialize and update west workspace
+        run: |
+          west init -l Specialized_Test
+          west update
+          west zephyr-export
+
+      - name: Build app for native_sim
+        run: west build -p always -b native_sim Specialized_Test/app
+
+      - name: Run unit tests
+        # tests/unit todavia no tiene CMakeLists.txt/prj.conf/tests.yaml
+        # (llega en la Rama 5). Quitar continue-on-error cuando exista.
+        continue-on-error: true
+        run: west twister -T Specialized_Test/tests/unit -p unit_testing --inline-logs -v
