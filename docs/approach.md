@@ -1,3 +1,55 @@
 # Approach
 
-Pendiente. Se completara en la rama `docs/setup-build-guide` (ver `docs/plan.md`).
+## Resumen
+
+La estrategia del proyecto es separar la solucion en dos niveles:
+
+- logica portable y testeable sin Zephyr
+- capa de integracion con Zephyr para CAN, tiempo y consola
+
+## Por que este enfoque
+
+No hay microcontrolador fisico disponible, asi que la solucion tiene que permitir:
+
+- validar comportamiento con `unit_testing`
+- validar integracion minima con `native_sim`
+- mantener la logica aislada de drivers y del kernel
+
+## Regla principal
+
+Estos modulos no deben depender de Zephyr:
+
+- `app_config_model.*`
+- `app_logic.*`
+- `can_formatter.*`
+
+Estos modulos si dependen de Zephyr:
+
+- `main.c`
+- `runtime.c`
+- `zephyr_app_config.c`
+
+## Estado actual
+
+El **Paso 0** queda cerrado para compilacion local:
+
+- Zephyr `v4.4.0` descargado con `west update`
+- app scaffold compilada con `west build -p always -b native_sim Specialized_Test/app`
+- build hecho en Ubuntu 20.04 sobre WSL1, ejecutado desde PowerShell elevada
+- toolchain usada: `ZEPHYR_TOOLCHAIN_VARIANT=host`
+
+La limitacion pendiente del PC es que WSL2 no puede arrancar porque la virtualizacion esta desactivada en BIOS/UEFI. Esto no bloquea continuar con `native_sim`, pero si conviene corregirlo cuando sea posible.
+
+## Siguiente hito
+
+El siguiente hito tecnico es la `Rama 2`: hacer que la app imprima un mensaje visible y validar ejecucion, no solo compilacion.
+
+Validacion esperada:
+
+```bash
+export PATH=/root/miniconda/bin:$PATH
+export ZEPHYR_TOOLCHAIN_VARIANT=host
+cd /mnt/c/Workspaces
+west build -p always -b native_sim Specialized_Test/app
+west build -t run
+```
