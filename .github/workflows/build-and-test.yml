@@ -8,6 +8,9 @@ jobs:
   native_sim:
     runs-on: ubuntu-22.04
     container:
+      # TODO: pin to a specific tag compatible with Zephyr v4.4.0
+      # (confirm against zephyr/.github/workflows after the first west update,
+      # or against the tag used in an already-validated local environment).
       image: zephyrprojectrtos/ci:latest
       options: --user root
     steps:
@@ -36,7 +39,7 @@ jobs:
         run: west build -p always -b native_sim Specialized_Test/app
 
       - name: Run unit tests
-        # tests/unit todavia no tiene CMakeLists.txt/prj.conf/tests.yaml
-        # (llega en la Rama 5). Quitar continue-on-error cuando exista.
+        # tests/unit does not have CMakeLists.txt/prj.conf/tests.yaml yet
+        # (lands in Branch 5). Remove continue-on-error once it exists.
         continue-on-error: true
         run: west twister -T Specialized_Test/tests/unit -p unit_testing --inline-logs -v
