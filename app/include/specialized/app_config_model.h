@@ -5,7 +5,8 @@
 #include <stdint.h>
 
 #define APP_CONFIG_TX_COUNT 3
-#define APP_CONFIG_MAX_CAN_ID 0x1FFFFFFFu
+#define APP_CONFIG_MAX_STD_CAN_ID 0x7FFu
+#define APP_CONFIG_MAX_EXT_CAN_ID 0x1FFFFFFFu
 
 struct app_can_bus_config {
 	uint32_t bitrate;
@@ -16,12 +17,14 @@ struct app_can_bus_config {
 
 struct app_tx_message_config {
 	uint32_t id;
+	bool extended_id;
 	uint32_t period_ms;
 };
 
 struct app_trigger_config {
 	bool enabled;
 	uint32_t id;
+	bool extended_id;
 };
 
 struct app_config {
