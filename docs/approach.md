@@ -66,8 +66,14 @@ west build -p always -b native_sim/native/64 Specialized_Test/app
 west build -t run
 ```
 
+## Rama 3 completada
+
+`feat/build-time-config` introdujo Kconfig (CAN bus, TX periodico, triggers
+opcionales) y el modelo de configuracion tipado `app_config_model`, validado
+en `main.c` al boot. El build sigue verde en CI sobre `native_sim`.
+
 ## Siguiente hito
 
-La siguiente rama es `feat/build-time-config`. Su alcance es introducir Kconfig
-y el modelo de configuracion tipado, sin implementar todavia CAN TX, CAN RX ni
-triggers en runtime.
+La siguiente rama es `feat/portable-logic`: estado de impresion, triggers
+`start`/`stop`/`hello` y formateo de mensajes CAN, todo sin depender de
+Zephyr.

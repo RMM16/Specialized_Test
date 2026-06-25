@@ -114,9 +114,24 @@ Relevant completed commits:
 The feature branches were merged into `main` without squashing so the technical
 steps remain visible.
 
+## Branch 3: build-time configuration
+
+`feat/build-time-config` added the Kconfig options for the CAN bus, the three
+periodic TX messages and the optional start/stop/hello triggers, plus the
+portable `app_config_model` (no Zephyr headers) that validates them: zero
+periods, out-of-range standard/extended CAN IDs, trigger collisions and
+TX/trigger ID collisions. `zephyr_app_config.c` bridges `CONFIG_*` into that
+model, and `main.c` validates it at boot.
+
+CI (`.github/workflows/build-and-test.yml`) builds the app for `native_sim` on
+a bare `ubuntu-22.04` runner (Python 3.12, host GCC toolchain, no Zephyr SDK)
+on every push, and is green as of this branch.
+
 ## Next implementation step
 
-Create `feat/build-time-config` and implement the Kconfig options and typed
-configuration model described in `docs/plan.md`. CAN runtime code and tests must
-remain in their later dedicated branches.
+Create `feat/portable-logic` and implement the printing-enabled state machine,
+`start`/`stop`/`hello` trigger handling and CAN message formatting described in
+`docs/plan.md`, still without depending on Zephyr headers. Unit tests for this
+logic, plus the config model added in Branch 3, are introduced in
+`test/unit-coverage`.
 

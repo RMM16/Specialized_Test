@@ -11,6 +11,10 @@ Completed:
 - application scaffold
 - successful build for `native_sim`
 - visible boot message validated on `native_sim/native/64`
+- build-time configuration via Kconfig (CAN bus, periodic TX, optional
+  triggers) and a portable `app_config_model` that validates it
+- CI builds the app for `native_sim` on every push (see
+  [.github/workflows/build-and-test.yml](.github/workflows/build-and-test.yml))
 
 Validated output:
 
@@ -21,11 +25,10 @@ Specialized Test booted on native_sim
 
 Not implemented yet:
 
-- build-time CAN configuration
 - portable control and formatting modules
 - periodic CAN TX
 - CAN RX and console formatting
-- optional start, stop and hello triggers
+- optional start, stop and hello triggers wired to runtime
 - unit and integration tests
 
 The complete implementation order is defined in [docs/plan.md](docs/plan.md).
@@ -103,12 +106,13 @@ kept in [docs/build.md](docs/build.md).
 ## Development workflow
 
 Each functionality is implemented in a short branch, validated, committed and
-then merged into `main`. Continue with:
+then merged into `main`. After `feat/build-time-config` is merged, continue
+with the next branch from [docs/plan.md](docs/plan.md):
 
 ```bash
 git switch main
 git pull --ff-only
-git switch -c feat/build-time-config
+git switch -c feat/portable-logic
 ```
 
 Do not commit `build/`, Python environments, IDE state, downloaded SDKs or

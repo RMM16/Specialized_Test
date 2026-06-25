@@ -296,6 +296,10 @@ Introducir toda la configuracion que debe estar disponible en build-time.
 
 La app compila con configuracion por defecto y con al menos una variante de configuracion.
 
+### Estado
+
+Completada en rama, validada por CI en `native_sim`. Pendiente de merge a `main`.
+
 ## 6.4 Rama 4
 
 - Rama: `feat/portable-logic`
