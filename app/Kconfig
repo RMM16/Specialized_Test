@@ -81,12 +81,10 @@ config APP_START_TRIGGER_ID
 	hex "Start trigger CAN ID"
 	range 0x0 0x1FFFFFFF
 	default 0x200
-	visible if APP_START_TRIGGER_ENABLE
 
 config APP_START_TRIGGER_EXTENDED_ID
 	bool "Start trigger uses extended (29-bit) CAN ID"
 	default n
-	visible if APP_START_TRIGGER_ENABLE
 
 config APP_STOP_TRIGGER_ENABLE
 	bool "Enable stop trigger"
@@ -96,12 +94,10 @@ config APP_STOP_TRIGGER_ID
 	hex "Stop trigger CAN ID"
 	range 0x0 0x1FFFFFFF
 	default 0x201
-	visible if APP_STOP_TRIGGER_ENABLE
 
 config APP_STOP_TRIGGER_EXTENDED_ID
 	bool "Stop trigger uses extended (29-bit) CAN ID"
 	default n
-	visible if APP_STOP_TRIGGER_ENABLE
 
 config APP_HELLO_TRIGGER_ENABLE
 	bool "Enable hello trigger"
@@ -111,12 +107,10 @@ config APP_HELLO_TRIGGER_ID
 	hex "Hello trigger CAN ID"
 	range 0x0 0x1FFFFFFF
 	default 0x202
-	visible if APP_HELLO_TRIGGER_ENABLE
 
 config APP_HELLO_TRIGGER_EXTENDED_ID
 	bool "Hello trigger uses extended (29-bit) CAN ID"
 	default n
-	visible if APP_HELLO_TRIGGER_ENABLE
 
 endmenu
 
