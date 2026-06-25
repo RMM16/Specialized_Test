@@ -21,6 +21,7 @@ Validated output:
 ```text
 *** Booting Zephyr OS build v4.4.0 ***
 Specialized Test booted on native_sim
+Build-time configuration validated
 ```
 
 Not implemented yet:
