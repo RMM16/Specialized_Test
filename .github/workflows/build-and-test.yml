@@ -1,0 +1,89 @@
+name: build-and-test
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  native_sim:
+    runs-on: ubuntu-22.04
+    env:
+      # native_sim only needs the host toolchain; no cross-compiling Zephyr
+      # SDK is installed or required for this job.
+      ZEPHYR_TOOLCHAIN_VARIANT: host
+    steps:
+      - name: Checkout manifest repo
+        uses: actions/checkout@v4
+        with:
+          path: Specialized_Test
+
+      - name: Install native_sim build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            git gcc g++ make gperf ccache dfu-util device-tree-compiler \
+            wget xz-utils file libsdl2-dev \
+            gcc-multilib g++-multilib libc6-dev-i386
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Set up Python environment
+        run: |
+          python3 -m venv ~/.venv-zephyr
+          source ~/.venv-zephyr/bin/activate
+          # Pinned to the version already validated in docs/build.md, so
+          # west itself does not silently drift between CI runs.
+          pip install west==1.5.0
+
+      - name: Cache west workspace
+        uses: actions/cache@v4
+        with:
+          path: |
+            zephyr
+            modules
+            bootloader
+            tools
+          key: west-${{ hashFiles('Specialized_Test/west.yml') }}
+
+      - name: Initialize and update west workspace
+        run: |
+          source ~/.venv-zephyr/bin/activate
+          west init -l Specialized_Test
+          west update
+          west zephyr-export
+          pip install -r zephyr/scripts/requirements.txt
+
+      - name: Build app for native_sim with default configuration
+        run: |
+          source ~/.venv-zephyr/bin/activate
+          west build -p always -b native_sim Specialized_Test/app
+
+      - name: Run native_sim and check boot output
+        # native_sim keeps the simulated kernel running after main()
+        # returns, so capture a few seconds of output instead of waiting
+        # for the process to exit on its own.
+        run: |
+          timeout 5 ./build/zephyr/zephyr.exe > native_sim_output.log 2>&1 || true
+          cat native_sim_output.log
+          grep -q "Specialized Test booted on native_sim" native_sim_output.log
+          grep -q "Build-time configuration validated" native_sim_output.log
+
+      - name: Build app for native_sim with an alternate configuration
+        # Exercises the build-time config plan's acceptance criterion: it
+        # must also build with a non-default, still-valid variant (all
+        # three optional triggers enabled, using their non-colliding
+        # default IDs).
+        run: |
+          source ~/.venv-zephyr/bin/activate
+          west build -p always -b native_sim -d build-alt Specialized_Test/app -- \
+            -DCONFIG_APP_START_TRIGGER_ENABLE=y \
+            -DCONFIG_APP_STOP_TRIGGER_ENABLE=y \
+            -DCONFIG_APP_HELLO_TRIGGER_ENABLE=y
+
+      # Unit test step (west twister -T tests/unit) returns in Branch 5,
+      # once tests/unit has real CMakeLists.txt/prj.conf/testcase.yaml.
+      # Keeping it out for now avoids a misleading red annotation on an
+      # empty test directory.

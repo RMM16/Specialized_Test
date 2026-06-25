@@ -1,0 +1,39 @@
+# Zephyr and CMake build output
+build/
+build-*/
+cmake-build-*/
+CMakeCache.txt
+CMakeFiles/
+
+# Python environments and caches
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Zephyr workspace dependencies belong outside this manifest repository
+.west/
+zephyr/
+modules/
+bootloader/
+tools/
+
+# IDE and operating-system state
+.vscode/
+.idea/
+.claude/
+*.code-workspace
+.DS_Store
+Thumbs.db
+
+# Local logs, downloads and temporary installation files
+*.log
+*.tmp
+*.msi
+*.appx
+*.appxbundle
+*.cab
+*.tar
+*.tar.gz
+

@@ -83,7 +83,7 @@ Specialized_Test/
 |           `-- test_can_formatter.c
 `-- docs/
     |-- input/
-    |   `-- Embedded Pre-Screen.pdf.pdf
+    |   `-- Embedded Pre-Screen.pdf
     |-- approach.md
     |-- build.md
     `-- plan.md
@@ -212,7 +212,11 @@ Crear la base del proyecto sin implementar funcionalidad de negocio.
 ### Validacion
 
 - `west update`
-- `west build -p always -b native_sim app`
+- `west build -p always -b native_sim/native/64 Specialized_Test/app`
+
+### Estado
+
+Completada y fusionada en `main`.
 
 ### Riesgos
 
@@ -237,12 +241,16 @@ Confirmar que el proyecto compila y arranca en `native_sim`.
 
 ### Validacion
 
-- `west build -p always -b native_sim app`
+- `west build -p always -b native_sim/native/64 Specialized_Test/app`
 - ejecucion del binario o `west build -t run`
 
 ### Criterio de aceptacion
 
 La app arranca y emite una salida simple en consola.
+
+### Estado
+
+Completada y fusionada en `main`.
 
 ## 6.3 Rama 3
 
@@ -287,6 +295,10 @@ Introducir toda la configuracion que debe estar disponible en build-time.
 ### Criterio de aceptacion
 
 La app compila con configuracion por defecto y con al menos una variante de configuracion.
+
+### Estado
+
+Completada en rama, validada por CI en `native_sim`. Pendiente de merge a `main`.
 
 ## 6.4 Rama 4
 
@@ -471,7 +483,7 @@ Tener una validacion minima de integracion end-to-end.
 
 ### Validacion
 
-- `west build -p always -b native_sim app`
+- `west build -p always -b native_sim/native/64 Specialized_Test/app`
 - ejecucion local de la app
 - unit tests siguen verdes
 
@@ -664,13 +676,13 @@ Mitigacion:
 west update
 west zephyr-export
 west sdk install
-west build -p always -b native_sim zephyr/samples/hello_world
+west build -p always -b native_sim/native/64 zephyr/samples/hello_world
 ```
 
 ### App
 
 ```bash
-west build -p always -b native_sim app
+west build -p always -b native_sim/native/64 Specialized_Test/app
 ```
 
 ### Ejecucion

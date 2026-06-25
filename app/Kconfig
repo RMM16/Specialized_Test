@@ -1,3 +1,125 @@
 mainmenu "Specialized Test Application"
 
+menu "CAN bus configuration"
+
+config APP_CAN_BITRATE
+	int "CAN bitrate (bps)"
+	range 10000 1000000
+	default 500000
+
+config APP_CAN_SAMPLE_POINT_PERMILLE
+	int "CAN sample point (permille)"
+	range 500 950
+	default 875
+
+config APP_CAN_LOOPBACK
+	bool "Enable CAN loopback mode"
+	default y if BOARD_NATIVE_SIM
+	default n
+	help
+	  Required to validate RX/TX on native_sim without physical hardware.
+	  Should stay disabled by default on real boards with a physical bus.
+
+config APP_CAN_RX_QUEUE_DEPTH
+	int "CAN RX message queue depth"
+	range 1 64
+	default 8
+
+endmenu
+
+menu "Periodic TX messages"
+
+config APP_TX1_ID
+	hex "TX1 CAN ID"
+	range 0x0 0x7FF if !APP_TX1_EXTENDED_ID
+	range 0x0 0x1FFFFFFF if APP_TX1_EXTENDED_ID
+	default 0x100
+
+config APP_TX1_EXTENDED_ID
+	bool "TX1 uses extended (29-bit) CAN ID"
+	default n
+
+config APP_TX1_PERIOD_MS
+	int "TX1 period (ms)"
+	range 1 3600000
+	default 1000
+
+config APP_TX2_ID
+	hex "TX2 CAN ID"
+	range 0x0 0x7FF if !APP_TX2_EXTENDED_ID
+	range 0x0 0x1FFFFFFF if APP_TX2_EXTENDED_ID
+	default 0x101
+
+config APP_TX2_EXTENDED_ID
+	bool "TX2 uses extended (29-bit) CAN ID"
+	default n
+
+config APP_TX2_PERIOD_MS
+	int "TX2 period (ms)"
+	range 1 3600000
+	default 500
+
+config APP_TX3_ID
+	hex "TX3 CAN ID"
+	range 0x0 0x7FF if !APP_TX3_EXTENDED_ID
+	range 0x0 0x1FFFFFFF if APP_TX3_EXTENDED_ID
+	default 0x102
+
+config APP_TX3_EXTENDED_ID
+	bool "TX3 uses extended (29-bit) CAN ID"
+	default n
+
+config APP_TX3_PERIOD_MS
+	int "TX3 period (ms)"
+	range 1 3600000
+	default 250
+
+endmenu
+
+menu "Optional triggers"
+
+config APP_START_TRIGGER_ENABLE
+	bool "Enable start trigger"
+	default n
+
+config APP_START_TRIGGER_ID
+	hex "Start trigger CAN ID"
+	range 0x0 0x7FF if !APP_START_TRIGGER_EXTENDED_ID
+	range 0x0 0x1FFFFFFF if APP_START_TRIGGER_EXTENDED_ID
+	default 0x200
+
+config APP_START_TRIGGER_EXTENDED_ID
+	bool "Start trigger uses extended (29-bit) CAN ID"
+	default n
+
+config APP_STOP_TRIGGER_ENABLE
+	bool "Enable stop trigger"
+	default n
+
+config APP_STOP_TRIGGER_ID
+	hex "Stop trigger CAN ID"
+	range 0x0 0x7FF if !APP_STOP_TRIGGER_EXTENDED_ID
+	range 0x0 0x1FFFFFFF if APP_STOP_TRIGGER_EXTENDED_ID
+	default 0x201
+
+config APP_STOP_TRIGGER_EXTENDED_ID
+	bool "Stop trigger uses extended (29-bit) CAN ID"
+	default n
+
+config APP_HELLO_TRIGGER_ENABLE
+	bool "Enable hello trigger"
+	default n
+
+config APP_HELLO_TRIGGER_ID
+	hex "Hello trigger CAN ID"
+	range 0x0 0x7FF if !APP_HELLO_TRIGGER_EXTENDED_ID
+	range 0x0 0x1FFFFFFF if APP_HELLO_TRIGGER_EXTENDED_ID
+	default 0x202
+
+config APP_HELLO_TRIGGER_EXTENDED_ID
+	bool "Hello trigger uses extended (29-bit) CAN ID"
+	default n
+
+endmenu
+
 source "Kconfig.zephyr"
