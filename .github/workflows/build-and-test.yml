@@ -7,22 +7,30 @@ on:
 jobs:
   native_sim:
     runs-on: ubuntu-22.04
-    container:
-      # TODO: pin to a specific tag compatible with Zephyr v4.4.0
-      # (confirm against zephyr/.github/workflows after the first west update,
-      # or against the tag used in an already-validated local environment).
-      image: zephyrprojectrtos/ci:latest
-      options: --user root
     env:
-      # native_sim only needs the host toolchain, not the cross-compiling
-      # Zephyr SDK. Without this, CMake fails looking for a Zephyr-sdk
-      # package config that the CI image does not need to provide.
+      # native_sim only needs the host toolchain, no cross-compiling
+      # Zephyr SDK is required (or installed) for this job.
       ZEPHYR_TOOLCHAIN_VARIANT: host
     steps:
       - name: Checkout manifest repo
         uses: actions/checkout@v4
         with:
           path: Specialized_Test
+
+      - name: Install native_sim build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            git gcc g++ make gperf ccache dfu-util device-tree-compiler \
+            wget xz-utils file python3 python3-pip python3-venv \
+            python3-setuptools python3-wheel libsdl2-dev \
+            gcc-multilib g++-multilib libc6-dev-i386
+
+      - name: Set up Python environment
+        run: |
+          python3 -m venv ~/.venv-zephyr
+          source ~/.venv-zephyr/bin/activate
+          pip install west
 
       - name: Cache west workspace
         uses: actions/cache@v4
@@ -36,15 +44,21 @@ jobs:
 
       - name: Initialize and update west workspace
         run: |
+          source ~/.venv-zephyr/bin/activate
           west init -l Specialized_Test
           west update
           west zephyr-export
+          pip install -r zephyr/scripts/requirements.txt
 
       - name: Build app for native_sim
-        run: west build -p always -b native_sim Specialized_Test/app
+        run: |
+          source ~/.venv-zephyr/bin/activate
+          west build -p always -b native_sim Specialized_Test/app
 
       - name: Run unit tests
         # tests/unit does not have CMakeLists.txt/prj.conf/tests.yaml yet
         # (lands in Branch 5). Remove continue-on-error once it exists.
         continue-on-error: true
-        run: west twister -T Specialized_Test/tests/unit -p unit_testing --inline-logs -v
+        run: |
+          source ~/.venv-zephyr/bin/activate
+          west twister -T Specialized_Test/tests/unit -p unit_testing --inline-logs -v
