@@ -14,9 +14,11 @@ config APP_CAN_SAMPLE_POINT_PERMILLE
 
 config APP_CAN_LOOPBACK
 	bool "Enable CAN loopback mode"
-	default y
+	default y if BOARD_NATIVE_SIM
+	default n
 	help
 	  Required to validate RX/TX on native_sim without physical hardware.
+	  Should stay disabled by default on real boards with a physical bus.
 
 config APP_CAN_RX_QUEUE_DEPTH
 	int "CAN RX message queue depth"
