@@ -31,7 +31,8 @@ menu "Periodic TX messages"
 
 config APP_TX1_ID
 	hex "TX1 CAN ID"
-	range 0x0 0x1FFFFFFF
+	range 0x0 0x7FF if !APP_TX1_EXTENDED_ID
+	range 0x0 0x1FFFFFFF if APP_TX1_EXTENDED_ID
 	default 0x100
 
 config APP_TX1_EXTENDED_ID
@@ -45,7 +46,8 @@ config APP_TX1_PERIOD_MS
 
 config APP_TX2_ID
 	hex "TX2 CAN ID"
-	range 0x0 0x1FFFFFFF
+	range 0x0 0x7FF if !APP_TX2_EXTENDED_ID
+	range 0x0 0x1FFFFFFF if APP_TX2_EXTENDED_ID
 	default 0x101
 
 config APP_TX2_EXTENDED_ID
@@ -59,7 +61,8 @@ config APP_TX2_PERIOD_MS
 
 config APP_TX3_ID
 	hex "TX3 CAN ID"
-	range 0x0 0x1FFFFFFF
+	range 0x0 0x7FF if !APP_TX3_EXTENDED_ID
+	range 0x0 0x1FFFFFFF if APP_TX3_EXTENDED_ID
 	default 0x102
 
 config APP_TX3_EXTENDED_ID
@@ -81,7 +84,8 @@ config APP_START_TRIGGER_ENABLE
 
 config APP_START_TRIGGER_ID
 	hex "Start trigger CAN ID"
-	range 0x0 0x1FFFFFFF
+	range 0x0 0x7FF if !APP_START_TRIGGER_EXTENDED_ID
+	range 0x0 0x1FFFFFFF if APP_START_TRIGGER_EXTENDED_ID
 	default 0x200
 
 config APP_START_TRIGGER_EXTENDED_ID
@@ -94,7 +98,8 @@ config APP_STOP_TRIGGER_ENABLE
 
 config APP_STOP_TRIGGER_ID
 	hex "Stop trigger CAN ID"
-	range 0x0 0x1FFFFFFF
+	range 0x0 0x7FF if !APP_STOP_TRIGGER_EXTENDED_ID
+	range 0x0 0x1FFFFFFF if APP_STOP_TRIGGER_EXTENDED_ID
 	default 0x201
 
 config APP_STOP_TRIGGER_EXTENDED_ID
@@ -107,7 +112,8 @@ config APP_HELLO_TRIGGER_ENABLE
 
 config APP_HELLO_TRIGGER_ID
 	hex "Hello trigger CAN ID"
-	range 0x0 0x1FFFFFFF
+	range 0x0 0x7FF if !APP_HELLO_TRIGGER_EXTENDED_ID
+	range 0x0 0x1FFFFFFF if APP_HELLO_TRIGGER_EXTENDED_ID
 	default 0x202
 
 config APP_HELLO_TRIGGER_EXTENDED_ID
