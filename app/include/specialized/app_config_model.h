@@ -57,4 +57,6 @@ enum app_config_validation_result {
 
 enum app_config_validation_result app_config_validate(const struct app_config *config);
 
+const char *app_config_validation_result_to_str(enum app_config_validation_result result);
+
 #endif /* SPECIALIZED_APP_CONFIG_MODEL_H_ */

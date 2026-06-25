@@ -7,13 +7,16 @@
 int main(void)
 {
 	struct app_config config;
+	enum app_config_validation_result result;
 
 	printk("Specialized Test booted on %s\n", CONFIG_BOARD);
 
 	zephyr_app_config_load(&config);
 
-	if (app_config_validate(&config) != APP_CONFIG_OK) {
-		printk("Invalid build-time configuration\n");
+	result = app_config_validate(&config);
+	if (result != APP_CONFIG_OK) {
+		printk("Invalid build-time configuration: %s\n",
+		       app_config_validation_result_to_str(result));
 		k_panic();
 	}
 

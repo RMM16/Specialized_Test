@@ -102,3 +102,25 @@ enum app_config_validation_result app_config_validate(const struct app_config *c
 
 	return APP_CONFIG_OK;
 }
+
+const char *app_config_validation_result_to_str(enum app_config_validation_result result)
+{
+	switch (result) {
+	case APP_CONFIG_OK:
+		return "ok";
+	case APP_CONFIG_ERR_NULL_CONFIG:
+		return "null config pointer";
+	case APP_CONFIG_ERR_INVALID_CAN_BUS:
+		return "invalid CAN bus parameters (bitrate, sample point or RX queue depth)";
+	case APP_CONFIG_ERR_ZERO_PERIOD:
+		return "a periodic TX message has a zero period";
+	case APP_CONFIG_ERR_INVALID_ID:
+		return "a CAN ID is out of range for its standard/extended kind";
+	case APP_CONFIG_ERR_TRIGGER_COLLISION:
+		return "two optional triggers share the same CAN ID";
+	case APP_CONFIG_ERR_TX_TRIGGER_COLLISION:
+		return "a periodic TX message shares its CAN ID with a trigger";
+	default:
+		return "unknown validation error";
+	}
+}
