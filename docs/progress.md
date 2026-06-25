@@ -127,11 +127,24 @@ CI (`.github/workflows/build-and-test.yml`) builds the app for `native_sim` on
 a bare `ubuntu-22.04` runner (Python 3.12, host GCC toolchain, no Zephyr SDK)
 on every push, and is green as of this branch.
 
+## Branch 4: portable control-state and formatter
+
+`feat/portable-logic` added `app_can_message` (a portable classic-CAN frame
+representation, decoupled from Zephyr's `struct can_frame`), `app_logic`
+(the `printing_enabled` state machine deciding print/ignore/hello per
+message) and `can_formatter` (renders timestamp, standard/extended ID, DLC
+and payload into a caller buffer).
+
+Both modules are Zephyr-free, return explicit error results instead of
+dereferencing NULL arguments, and `can_formatter_format()` rejects a DLC
+above 8 instead of silently truncating the payload while reporting the
+original, inconsistent DLC. They are compiled into the app via CMake to
+confirm they build and link, but are not yet called from `main.c`/runtime;
+that wiring happens in Branches 6-8 alongside CAN TX/RX.
+
 ## Next implementation step
 
-Create `feat/portable-logic` and implement the printing-enabled state machine,
-`start`/`stop`/`hello` trigger handling and CAN message formatting described in
-`docs/plan.md`, still without depending on Zephyr headers. Unit tests for this
-logic, plus the config model added in Branch 3, are introduced in
-`test/unit-coverage`.
+Create `test/unit-coverage` and add ztest coverage for `app_config_model`,
+`app_logic` and `can_formatter` as described in `docs/plan.md`, before
+touching real CAN traffic or concurrency.
 

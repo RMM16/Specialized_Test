@@ -13,6 +13,9 @@ Completed:
 - visible boot message validated on `native_sim/native/64`
 - build-time configuration via Kconfig (CAN bus, periodic TX, optional
   triggers) and a portable `app_config_model` that validates it
+- portable `app_logic` (printing-enabled state, start/stop/hello trigger
+  decisions) and `can_formatter` (timestamp, std/extended ID, DLC, payload),
+  both Zephyr-free and compiled into the app, but not yet wired to runtime
 - CI builds the app for `native_sim` on every push (see
   [.github/workflows/build-and-test.yml](.github/workflows/build-and-test.yml))
 
@@ -26,7 +29,6 @@ Build-time configuration validated
 
 Not implemented yet:
 
-- portable control and formatting modules
 - periodic CAN TX
 - CAN RX and console formatting
 - optional start, stop and hello triggers wired to runtime
@@ -107,13 +109,13 @@ kept in [docs/build.md](docs/build.md).
 ## Development workflow
 
 Each functionality is implemented in a short branch, validated, committed and
-then merged into `main`. After `feat/build-time-config` is merged, continue
-with the next branch from [docs/plan.md](docs/plan.md):
+then merged into `main`. After `feat/portable-logic` is merged, continue with
+the next branch from [docs/plan.md](docs/plan.md):
 
 ```bash
 git switch main
 git pull --ff-only
-git switch -c feat/portable-logic
+git switch -c test/unit-coverage
 ```
 
 Do not commit `build/`, Python environments, IDE state, downloaded SDKs or

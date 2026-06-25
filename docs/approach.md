@@ -72,8 +72,16 @@ west build -t run
 opcionales) y el modelo de configuracion tipado `app_config_model`, validado
 en `main.c` al boot. El build sigue verde en CI sobre `native_sim`.
 
+## Rama 4 completada
+
+`feat/portable-logic` anadio `app_logic` (estado de impresion, triggers
+`start`/`stop`/`hello`) y `can_formatter` (timestamp, ID estandar/extendido,
+DLC y payload), ambos sin depender de Zephyr y con manejo explicito de
+argumentos nulos y DLC invalido. Integrados en CMake, todavia sin conectar a
+runtime.
+
 ## Siguiente hito
 
-La siguiente rama es `feat/portable-logic`: estado de impresion, triggers
-`start`/`stop`/`hello` y formateo de mensajes CAN, todo sin depender de
-Zephyr.
+La siguiente rama es `test/unit-coverage`: cobertura ztest de
+`app_config_model`, `app_logic` y `can_formatter` antes de tocar CAN real o
+concurrencia.
