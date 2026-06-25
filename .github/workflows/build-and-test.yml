@@ -8,8 +8,8 @@ jobs:
   native_sim:
     runs-on: ubuntu-22.04
     env:
-      # native_sim only needs the host toolchain, no cross-compiling
-      # Zephyr SDK is required (or installed) for this job.
+      # native_sim only needs the host toolchain; no cross-compiling Zephyr
+      # SDK is installed or required for this job.
       ZEPHYR_TOOLCHAIN_VARIANT: host
     steps:
       - name: Checkout manifest repo
@@ -59,10 +59,7 @@ jobs:
           source ~/.venv-zephyr/bin/activate
           west build -p always -b native_sim Specialized_Test/app
 
-      - name: Run unit tests
-        # tests/unit does not have CMakeLists.txt/prj.conf/tests.yaml yet
-        # (lands in Branch 5). Remove continue-on-error once it exists.
-        continue-on-error: true
-        run: |
-          source ~/.venv-zephyr/bin/activate
-          west twister -T Specialized_Test/tests/unit -p unit_testing --inline-logs -v
+      # Unit test step (west twister -T tests/unit) returns in Branch 5,
+      # once tests/unit has real CMakeLists.txt/prj.conf/testcase.yaml.
+      # Keeping it out for now avoids a misleading red annotation on an
+      # empty test directory.
