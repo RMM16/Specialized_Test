@@ -34,7 +34,9 @@ jobs:
         run: |
           python3 -m venv ~/.venv-zephyr
           source ~/.venv-zephyr/bin/activate
-          pip install west
+          # Pinned to the version already validated in docs/build.md, so
+          # west itself does not silently drift between CI runs.
+          pip install west==1.5.0
 
       - name: Cache west workspace
         uses: actions/cache@v4
@@ -54,10 +56,22 @@ jobs:
           west zephyr-export
           pip install -r zephyr/scripts/requirements.txt
 
-      - name: Build app for native_sim
+      - name: Build app for native_sim with default configuration
         run: |
           source ~/.venv-zephyr/bin/activate
           west build -p always -b native_sim Specialized_Test/app
+
+      - name: Build app for native_sim with an alternate configuration
+        # Exercises the build-time config plan's acceptance criterion: it
+        # must also build with a non-default, still-valid variant (all
+        # three optional triggers enabled, using their non-colliding
+        # default IDs).
+        run: |
+          source ~/.venv-zephyr/bin/activate
+          west build -p always -b native_sim -d build-alt Specialized_Test/app -- \
+            -DCONFIG_APP_START_TRIGGER_ENABLE=y \
+            -DCONFIG_APP_STOP_TRIGGER_ENABLE=y \
+            -DCONFIG_APP_HELLO_TRIGGER_ENABLE=y
 
       # Unit test step (west twister -T tests/unit) returns in Branch 5,
       # once tests/unit has real CMakeLists.txt/prj.conf/testcase.yaml.
