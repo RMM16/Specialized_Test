@@ -10,6 +10,7 @@ enum app_logic_action {
 	APP_LOGIC_ACTION_NONE = 0,
 	APP_LOGIC_ACTION_PRINT,
 	APP_LOGIC_ACTION_HELLO,
+	APP_LOGIC_ACTION_INVALID_ARGS,
 };
 
 struct app_logic_state {
@@ -21,12 +22,16 @@ struct app_logic_state {
 
 /* Sets the initial printing_enabled state: enabled from boot unless a start
  * trigger is configured, in which case printing stays blocked until that
- * trigger ID is received.
+ * trigger ID is received. Returns false (and leaves state untouched) if
+ * any argument is NULL.
  */
-void app_logic_init(struct app_logic_state *state, const struct app_trigger_config *start_trigger,
+bool app_logic_init(struct app_logic_state *state, const struct app_trigger_config *start_trigger,
 		     const struct app_trigger_config *stop_trigger,
 		     const struct app_trigger_config *hello_trigger);
 
+/* Returns APP_LOGIC_ACTION_INVALID_ARGS if state or message is NULL,
+ * without touching state.
+ */
 enum app_logic_action app_logic_handle_message(struct app_logic_state *state,
 						const struct app_can_message *message);
 

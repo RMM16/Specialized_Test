@@ -15,7 +15,7 @@ struct app_can_message {
 	bool extended_id;
 	uint8_t dlc;
 	uint8_t data[APP_CAN_MESSAGE_MAX_DLC];
-	uint32_t timestamp_ms;
+	uint64_t timestamp_ms;
 };
 
 #endif /* SPECIALIZED_APP_CAN_MESSAGE_H_ */

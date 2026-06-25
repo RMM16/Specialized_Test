@@ -5,16 +5,29 @@
 
 #include "specialized/app_can_message.h"
 
-/* Long enough for the worst case: timestamp, extended ID, DLC and 8 hex
- * payload bytes with separators.
+/* Worst case: 20-digit uint64 timestamp, extended ID, DLC and 8 hex payload
+ * bytes with separators, plus the terminating NUL.
  */
-#define CAN_FORMATTER_LINE_LEN 80
+#define CAN_FORMATTER_LINE_LEN 96
 
-/* Formats message into buf (always NUL-terminated if buf_size > 0), the
- * same way snprintf() does. Returns the number of characters that would
- * have been written excluding the terminating NUL, even if buf was too
- * small to hold them all, so callers can detect truncation.
+enum can_formatter_result {
+	CAN_FORMATTER_OK = 0,
+	CAN_FORMATTER_ERR_NULL_ARG,
+	CAN_FORMATTER_ERR_INVALID_DLC,
+	CAN_FORMATTER_ERR_BUFFER_TOO_SMALL,
+};
+
+/* Formats message into buf, NUL-terminated on CAN_FORMATTER_OK.
+ *
+ * out_len, if non-NULL, receives the number of characters the formatted
+ * line occupies excluding the NUL: written into buf on
+ * CAN_FORMATTER_OK, or the length that would have been required on
+ * CAN_FORMATTER_ERR_BUFFER_TOO_SMALL (buf is left truncated, like
+ * snprintf()), so callers can size a retry buffer.
+ *
+ * buf may be NULL only if buf_size is 0, to only query the required length.
  */
-int can_formatter_format(const struct app_can_message *message, char *buf, size_t buf_size);
+enum can_formatter_result can_formatter_format(const struct app_can_message *message, char *buf,
+						size_t buf_size, size_t *out_len);
 
 #endif /* SPECIALIZED_CAN_FORMATTER_H_ */
