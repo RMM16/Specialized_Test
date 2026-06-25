@@ -13,6 +13,11 @@ jobs:
       # or against the tag used in an already-validated local environment).
       image: zephyrprojectrtos/ci:latest
       options: --user root
+    env:
+      # native_sim only needs the host toolchain, not the cross-compiling
+      # Zephyr SDK. Without this, CMake fails looking for a Zephyr-sdk
+      # package config that the CI image does not need to provide.
+      ZEPHYR_TOOLCHAIN_VARIANT: host
     steps:
       - name: Checkout manifest repo
         uses: actions/checkout@v4
