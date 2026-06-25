@@ -31,18 +31,20 @@ Estos modulos si dependen de Zephyr:
 
 ## Estado actual
 
-El **Paso 0** queda cerrado para compilacion local:
+El entorno, scaffold y arranque minimo estan completados:
 
 - Zephyr `v4.4.0` descargado con `west update`
-- app scaffold compilada con `west build -p always -b native_sim Specialized_Test/app`
+- app scaffold compilada con `west build -p always -b native_sim/native/64 Specialized_Test/app`
 - build hecho en Ubuntu 20.04 sobre WSL1, ejecutado desde PowerShell elevada
 - toolchain usada: `ZEPHYR_TOOLCHAIN_VARIANT=host`
+- ejecucion validada con `native_sim/native/64`
+- salida visible mediante `printk`
 
 La limitacion pendiente del PC es que WSL2 no puede arrancar porque la virtualizacion esta desactivada en BIOS/UEFI. Esto no bloquea continuar con `native_sim`, pero si conviene corregirlo cuando sea posible.
 
-## Siguiente hito
+## Validacion de arranque
 
-La `Rama 2` valida que la app arranca y que la consola funciona mediante un
+La `Rama 2` valido que la app arranca y que la consola funciona mediante un
 `printk` minimo:
 
 ```text
@@ -63,3 +65,9 @@ cd /mnt/c/Workspaces
 west build -p always -b native_sim/native/64 Specialized_Test/app
 west build -t run
 ```
+
+## Siguiente hito
+
+La siguiente rama es `feat/build-time-config`. Su alcance es introducir Kconfig
+y el modelo de configuracion tipado, sin implementar todavia CAN TX, CAN RX ni
+triggers en runtime.
