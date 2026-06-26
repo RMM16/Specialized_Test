@@ -1,5 +1,6 @@
 #include <errno.h>
 #include <stddef.h>
+#include <string.h>
 
 #include <zephyr/device.h>
 #include <zephyr/drivers/can.h>
@@ -8,7 +9,11 @@
 #include <zephyr/sys/printk.h>
 
 #include "specialized/app_can_message.h"
+#include "specialized/can_formatter.h"
 #include "specialized/runtime.h"
+
+#define RX_THREAD_STACK_SIZE 1024
+#define RX_THREAD_PRIORITY 5
 
 static const struct device *const can_dev = DEVICE_DT_GET(DT_CHOSEN(zephyr_canbus));
 
@@ -104,6 +109,81 @@ int runtime_start_periodic_tx(const struct app_config *config)
 	}
 
 	runtime_started = true;
+
+	return 0;
+}
+
+CAN_MSGQ_DEFINE(rx_msgq, 10);
+K_THREAD_STACK_DEFINE(rx_thread_stack, RX_THREAD_STACK_SIZE);
+
+static struct k_thread rx_thread_data;
+static bool rx_printer_started;
+
+static void frame_to_message(const struct can_frame *frame, struct app_can_message *message)
+{
+	uint8_t dlc = frame->dlc > APP_CAN_MESSAGE_MAX_DLC ? APP_CAN_MESSAGE_MAX_DLC : frame->dlc;
+
+	message->id = frame->id;
+	message->extended_id = (frame->flags & CAN_FRAME_IDE) != 0;
+	message->dlc = dlc;
+	memcpy(message->data, frame->data, dlc);
+	message->timestamp_ms = (uint64_t)k_uptime_get();
+}
+
+static void rx_thread_entry(void *arg1, void *arg2, void *arg3)
+{
+	ARG_UNUSED(arg1);
+	ARG_UNUSED(arg2);
+	ARG_UNUSED(arg3);
+
+	struct can_frame frame;
+	struct app_can_message message;
+	char line[CAN_FORMATTER_LINE_LEN];
+
+	while (1) {
+		k_msgq_get(&rx_msgq, &frame, K_FOREVER);
+
+		frame_to_message(&frame, &message);
+
+		if (can_formatter_format(&message, line, sizeof(line), NULL) ==
+		    CAN_FORMATTER_OK) {
+			printk("%s\n", line);
+		}
+	}
+}
+
+int runtime_start_rx_printer(void)
+{
+	/* Separate filters for standard and extended IDs: can_filter's IDE
+	 * flag is matched exactly, not masked, so a single filter cannot
+	 * catch-all across both ID kinds.
+	 */
+	const struct can_filter std_filter = {.id = 0, .mask = 0, .flags = 0};
+	const struct can_filter ext_filter = {.id = 0, .mask = 0, .flags = CAN_FILTER_IDE};
+	int ret;
+
+	if (rx_printer_started) {
+		return 0;
+	}
+
+	if (!device_is_ready(can_dev)) {
+		return -ENODEV;
+	}
+
+	ret = can_add_rx_filter_msgq(can_dev, &rx_msgq, &std_filter);
+	if (ret < 0) {
+		return ret;
+	}
+
+	ret = can_add_rx_filter_msgq(can_dev, &rx_msgq, &ext_filter);
+	if (ret < 0) {
+		return ret;
+	}
+
+	k_thread_create(&rx_thread_data, rx_thread_stack, K_THREAD_STACK_SIZEOF(rx_thread_stack),
+			rx_thread_entry, NULL, NULL, NULL, RX_THREAD_PRIORITY, 0, K_NO_WAIT);
+
+	rx_printer_started = true;
 
 	return 0;
 }
