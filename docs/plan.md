@@ -445,6 +445,10 @@ Recibir los mensajes CAN, convertirlos al modelo interno y emitirlos formateados
 
 Los mensajes loopback aparecen impresos con el formato correcto.
 
+### Estado
+
+Completada en rama, validada por CI (linea RX formateada) y en local. Pendiente de merge a `main`.
+
 ## 6.8 Rama 8
 
 - Rama: `feat/wire-triggers`

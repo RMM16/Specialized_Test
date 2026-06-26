@@ -191,10 +191,26 @@ CI now runs the built binary for 3 seconds (enough for the fastest 250 ms
 TX period to fire several times) and greps for all three TX IDs, not just
 the boot/config lines.
 
+## Branch 7: CAN RX message queue and printer
+
+`feat/can-rx-uart-printer` added `runtime_start_rx_printer()`: two RX
+filters on a shared `k_msgq` (one for standard, one for extended IDs --
+`can_filter`'s IDE flag is matched exactly rather than masked, so a single
+catch-all filter cannot cover both), a consumer thread converting each
+`struct can_frame` into the portable `app_can_message` (`k_uptime_get()` for
+the timestamp), and printing it via `can_formatter_format()`.
+
+Deliberately not wired to `app_logic` yet: every received frame is printed
+unconditionally, including the loopback of our own periodic TX. Branch 8
+adds the `app_logic_handle_message()` call that turns this into "print only
+when the configured start/stop/hello state says so."
+
+CI now also greps the captured boot output for a formatted RX line
+(`ID=0x10[012] (STD) DLC=8 DATA=...`), not just the raw TX log lines.
+
 ## Next implementation step
 
-Create `feat/can-rx-uart-printer` and add the CAN RX message queue and
-printer thread: `can_add_rx_filter_msgq()`, conversion from the real
-`struct can_frame` to the portable `app_can_message`, and printing through
-`app_logic` + `can_formatter`.
+Create `feat/wire-triggers` and connect `app_logic_handle_message()` to the
+RX printer thread, so `start`, `stop` and `hello` actually gate and
+annotate what gets printed, per the functional cases in `docs/plan.md`.
 

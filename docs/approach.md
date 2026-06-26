@@ -94,7 +94,14 @@ con payload aleatorio (`sys_rand_get`), cada uno con su propio periodo via
 `k_work_delayable`. Requirio `CONFIG_CAN=y` y `CONFIG_ENTROPY_GENERATOR=y`
 explicitos en `prj.conf`.
 
+## Rama 7 completada
+
+`feat/can-rx-uart-printer` anadio `runtime_start_rx_printer()`: filtros RX
+(STD y EXT por separado), hilo consumidor, conversion `can_frame` ->
+`app_can_message`, impresion via `can_formatter`. Todavia sin pasar por
+`app_logic`: imprime todo lo recibido sin filtrar por triggers.
+
 ## Siguiente hito
 
-La siguiente rama es `feat/can-rx-uart-printer`: cola RX, conversion a
-`app_can_message` y impresion via `app_logic` + `can_formatter`.
+La siguiente rama es `feat/wire-triggers`: conectar `app_logic_handle_message()`
+al hilo RX para que `start`/`stop`/`hello` controlen de verdad la impresion.
