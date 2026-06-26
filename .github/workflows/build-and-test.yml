@@ -74,6 +74,7 @@ jobs:
           grep -q "CAN TX sent ID 0x100" native_sim_output.log
           grep -q "CAN TX sent ID 0x101" native_sim_output.log
           grep -q "CAN TX sent ID 0x102" native_sim_output.log
+          grep -qE "ID=0x10[012] \(STD\) DLC=8 DATA=" native_sim_output.log
 
       - name: Build app for native_sim with an alternate configuration
         # Exercises the build-time config plan's acceptance criterion: it
