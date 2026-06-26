@@ -2,12 +2,14 @@
 #include <zephyr/sys/printk.h>
 
 #include "specialized/app_config_model.h"
+#include "specialized/runtime.h"
 #include "specialized/zephyr_app_config.h"
 
 int main(void)
 {
 	struct app_config config;
 	enum app_config_validation_result result;
+	int ret;
 
 	printk("Specialized Test booted on %s\n", CONFIG_BOARD);
 
@@ -21,6 +23,12 @@ int main(void)
 	}
 
 	printk("Build-time configuration validated\n");
+
+	ret = runtime_start_periodic_tx(&config);
+	if (ret != 0) {
+		printk("Failed to start periodic CAN TX: %d\n", ret);
+		k_panic();
+	}
 
 	return 0;
 }

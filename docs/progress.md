@@ -166,9 +166,35 @@ Also fixed in this branch: a `can_formatter_format()` internal `snprintf()`
 failure was being reported as `CAN_FORMATTER_ERR_NULL_ARG`; it now has its
 own `CAN_FORMATTER_ERR_FORMAT_FAILED`.
 
+## Branch 6: periodic CAN TX
+
+`feat/can-tx-periodic` added `runtime.c`/`runtime.h`, the first Zephyr-
+dependent module beyond `main.c` and `zephyr_app_config.c`. It gets the CAN
+device from the `zephyr,canbus` devicetree chosen node (`can_loopback0` on
+`native_sim`, enabled by default in `native_sim.dts`), applies
+`config->can` (loopback mode via `can_set_mode()`, bitrate and sample point
+via `can_calc_timing()` + `can_set_timing()`, both required before
+`can_start()` since the driver rejects them with `-EBUSY` afterwards),
+starts it, and schedules one `k_work_delayable` per configured TX message,
+each resubmitting itself at its own period and filling its payload with
+`sys_rand_get()`.
+
+Two non-obvious Kconfig requirements found by actually building rather than
+guessing: `CONFIG_CAN=y` (the loopback driver depends on the devicetree node
+but the CAN subsystem itself is opt-in), and `CONFIG_ENTROPY_GENERATOR=y`
+(without it, `sys_rand_get()` compiles but fails to link --
+`ENTROPY_GENERATOR` is a `menuconfig` with no default, so the native_sim
+fake entropy driver under it never gets built even though its own Kconfig
+defaults to "y").
+
+CI now runs the built binary for 3 seconds (enough for the fastest 250 ms
+TX period to fire several times) and greps for all three TX IDs, not just
+the boot/config lines.
+
 ## Next implementation step
 
-Create `feat/can-tx-periodic` and implement the three periodic CAN TX
-messages with random payloads on `native_sim` loopback, using the
-build-time TX configuration from Branch 3.
+Create `feat/can-rx-uart-printer` and add the CAN RX message queue and
+printer thread: `can_add_rx_filter_msgq()`, conversion from the real
+`struct can_frame` to the portable `app_can_message`, and printing through
+`app_logic` + `can_formatter`.
 

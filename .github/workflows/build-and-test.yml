@@ -64,12 +64,16 @@ jobs:
       - name: Run native_sim and check boot output
         # native_sim keeps the simulated kernel running after main()
         # returns, so capture a few seconds of output instead of waiting
-        # for the process to exit on its own.
+        # for the process to exit on its own. 3s is enough for the
+        # fastest periodic TX (250ms) to fire several times.
         run: |
-          timeout 5 ./build/zephyr/zephyr.exe > native_sim_output.log 2>&1 || true
+          timeout 3 ./build/zephyr/zephyr.exe > native_sim_output.log 2>&1 || true
           cat native_sim_output.log
           grep -q "Specialized Test booted on native_sim" native_sim_output.log
           grep -q "Build-time configuration validated" native_sim_output.log
+          grep -q "CAN TX sent ID 0x100" native_sim_output.log
+          grep -q "CAN TX sent ID 0x101" native_sim_output.log
+          grep -q "CAN TX sent ID 0x102" native_sim_output.log
 
       - name: Build app for native_sim with an alternate configuration
         # Exercises the build-time config plan's acceptance criterion: it

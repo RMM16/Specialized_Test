@@ -86,7 +86,15 @@ runtime.
 de `app_logic`, 6 de `can_formatter`) sobre la plataforma `unit_testing`.
 `west twister -T tests/unit -p unit_testing` pasa 26/26 en local y en CI.
 
+## Rama 6 completada
+
+`feat/can-tx-periodic` anadio `runtime.c`/`runtime.h`: arranque del
+dispositivo CAN (`zephyr,canbus` -> `can_loopback0`) y los 3 TX periodicos
+con payload aleatorio (`sys_rand_get`), cada uno con su propio periodo via
+`k_work_delayable`. Requirio `CONFIG_CAN=y` y `CONFIG_ENTROPY_GENERATOR=y`
+explicitos en `prj.conf`.
+
 ## Siguiente hito
 
-La siguiente rama es `feat/can-tx-periodic`: los 3 mensajes TX periodicos
-con payload aleatorio sobre loopback en `native_sim`.
+La siguiente rama es `feat/can-rx-uart-printer`: cola RX, conversion a
+`app_can_message` y impresion via `app_logic` + `can_formatter`.
