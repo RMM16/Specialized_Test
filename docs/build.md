@@ -1,51 +1,30 @@
 # Build
 
+This document is the detailed build reference: the full rationale, the
+original-PC workaround history and troubleshooting. For the short version
+(dependencies, `west init`, build and run), see the
+["Set up on another PC"](../README.md#set-up-on-another-pc) section in the
+README -- the commands here are deliberately not repeated so the two docs
+cannot drift apart.
+
+Sections below are ordered from "applies to any modern setup" to "only
+happened on the original development PC and should not be reproduced":
+
+- **Clean setup on another PC** and **Update an existing workspace** apply
+  to any clean setup, including the one validated on a second PC with WSL2 +
+  Ubuntu 26.04 (see [docs/progress.md](progress.md)).
+- Everything from **Legacy: validated original-PC environment** onward
+  documents the WSL1 + Miniconda workaround used on the original development
+  PC, where WSL2 could not be installed because virtualization was disabled
+  in the BIOS/UEFI. It is kept for traceability only -- do not copy it on a
+  modern PC.
+
 ## Clean setup on another PC
 
-Use a current Linux installation or WSL2 with Ubuntu. Zephyr `v4.4.0` requires
-Python 3.12 or newer.
-
-Install the host dependencies:
-
-```bash
-sudo apt update
-sudo apt install --no-install-recommends \
-  git cmake ninja-build gperf ccache dfu-util device-tree-compiler wget \
-  python3-dev python3-venv python3-tk xz-utils file make gcc gcc-multilib \
-  g++-multilib libsdl2-dev libmagic1
-```
-
-Create a virtual environment and initialize the west workspace:
-
-```bash
-python3 -m venv ~/specialized-workspace/.venv
-source ~/specialized-workspace/.venv/bin/activate
-pip install west
-
-west init -m https://github.com/RMM16/Specialized_Test.git \
-  --mr main ~/specialized-workspace
-cd ~/specialized-workspace
-west update
-west zephyr-export
-west packages pip --install
-```
-
-Build and run with the host toolchain:
-
-```bash
-export ZEPHYR_TOOLCHAIN_VARIANT=host
-west build -p always -b native_sim/native/64 Specialized_Test/app
-west build -t run
-```
-
-Expected output:
-
-```text
-*** Booting Zephyr OS build v4.4.0 ***
-Specialized Test booted on native_sim
-```
-
-Stop the simulator with `Ctrl+C`.
+Follow the ["Set up on another PC"](../README.md#set-up-on-another-pc)
+section in the README: dependencies, `west init`/`west update`, and the
+`native_sim` build/run commands are the same regardless of host OS, as long
+as WSL2 (or a native Linux install) is available.
 
 For a future physical board, install the Zephyr SDK:
 
@@ -67,7 +46,7 @@ west update
 west build -p always -b native_sim/native/64 Specialized_Test/app
 ```
 
-## Validated original environment
+## Legacy: validated original-PC environment
 
 El entorno queda validado para compilar la app Zephyr en `native_sim` desde este PC.
 
@@ -100,7 +79,7 @@ Specialized Test booted on native_sim
 El proceso del simulador permanece activo despues de que `main` retorna porque
 Zephyr continua ejecutando el kernel. Esto es comportamiento esperado.
 
-## Original-PC restriction
+## Legacy: original-PC restriction
 
 WSL2 no puede usarse ahora mismo porque la virtualizacion esta desactivada en BIOS/UEFI:
 
@@ -121,7 +100,7 @@ Tambien se aplico manualmente el kernel de WSL2 porque el MSI no lo instalaba co
 
 Aunque eso desbloquea el aviso de kernel, WSL2 sigue sin poder importar distros hasta activar Intel VT-x/virtualizacion en BIOS.
 
-## Original-PC workaround
+## Legacy: original-PC workaround
 
 Como workaround, se registro Ubuntu 20.04 en WSL1 desde una PowerShell elevada.
 
@@ -135,7 +114,7 @@ kernel: 4.4.0-18362-Microsoft
 
 Nota importante: la distro quedo registrada en el contexto elevado usado para instalarla. Los comandos de Zephyr se ejecutan lanzando `wsl.exe -d Ubuntu` desde PowerShell elevada.
 
-## Packages used on the original PC
+## Legacy: packages used on the original PC
 
 Paquetes Linux instalados:
 
@@ -166,7 +145,7 @@ cmake 4.3.4
 ninja 1.13.0
 ```
 
-## Original workspace layout
+## Legacy: original workspace layout
 
 El workspace se inicializo en:
 
@@ -191,7 +170,7 @@ C:\Workspaces\Specialized_Test\west.yml
 
 El tag `v4.4.0` de Zephyr fue comprobado antes de ejecutar `west update`.
 
-## Original-PC commands
+## Legacy: original-PC commands
 
 Desde PowerShell elevada:
 
@@ -214,7 +193,7 @@ cd /mnt/c/Workspaces
 west build -p always -b native_sim/native/64 Specialized_Test/app
 ```
 
-## Why the full SDK was not used
+## Legacy: why the full SDK was not used
 
 Para `native_sim` basta la toolchain host con:
 
@@ -224,7 +203,7 @@ export ZEPHYR_TOOLCHAIN_VARIANT=host
 
 Instalar Zephyr SDK completo queda pospuesto hasta que haga falta compilar para una placa real o un target que no sea `native_sim`/`unit_testing`.
 
-## Recommended original-PC fix
+## Legacy: recommended original-PC fix
 
 Cuando se pueda tocar BIOS/UEFI:
 

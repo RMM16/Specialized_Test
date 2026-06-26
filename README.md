@@ -129,8 +129,8 @@ kept in [docs/build.md](docs/build.md).
 ## Development workflow
 
 Each functionality is implemented in a short branch, validated, committed and
-then merged into `main`. After `feat/can-rx-uart-printer` is merged, continue
-with the next branch from [docs/plan.md](docs/plan.md):
+then merged into `main`. With `feat/can-rx-uart-printer` merged, the next
+branch from [docs/plan.md](docs/plan.md) is `feat/wire-triggers`:
 
 ```bash
 git switch main
