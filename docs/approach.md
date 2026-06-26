@@ -80,8 +80,13 @@ DLC y payload), ambos sin depender de Zephyr y con manejo explicito de
 argumentos nulos y DLC invalido. Integrados en CMake, todavia sin conectar a
 runtime.
 
+## Rama 5 completada
+
+`test/unit-coverage` anadio 26 casos `ztest` (10 de `app_config_model`, 10
+de `app_logic`, 6 de `can_formatter`) sobre la plataforma `unit_testing`.
+`west twister -T tests/unit -p unit_testing` pasa 26/26 en local y en CI.
+
 ## Siguiente hito
 
-La siguiente rama es `test/unit-coverage`: cobertura ztest de
-`app_config_model`, `app_logic` y `can_formatter` antes de tocar CAN real o
-concurrencia.
+La siguiente rama es `feat/can-tx-periodic`: los 3 mensajes TX periodicos
+con payload aleatorio sobre loopback en `native_sim`.

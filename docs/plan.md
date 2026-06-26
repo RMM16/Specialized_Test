@@ -335,6 +335,10 @@ Crear el nucleo portable y estable de la solucion.
 
 La logica queda aislada de Zephyr y lista para ser testeada.
 
+### Estado
+
+Completada en rama, validada por CI en `native_sim`. Mergeada a `main`.
+
 ## 6.5 Rama 5
 
 - Rama: `test/unit-coverage`
@@ -380,6 +384,10 @@ Cerrar cobertura sobre la parte importante antes de tocar CAN real y concurrenci
 ### Criterio de aceptacion
 
 Todos los tests unitarios pasan en verde.
+
+### Estado
+
+Completada en rama (26/26 tests en verde, local y CI). Pendiente de merge a `main`.
 
 ## 6.6 Rama 6
 

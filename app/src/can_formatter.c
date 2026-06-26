@@ -42,7 +42,7 @@ enum can_formatter_result can_formatter_format(const struct app_can_message *mes
 			    message->extended_id ? "EXT" : "STD", message->dlc, data_str);
 
 	if (written < 0) {
-		return CAN_FORMATTER_ERR_NULL_ARG;
+		return CAN_FORMATTER_ERR_FORMAT_FAILED;
 	}
 
 	if (out_len != NULL) {
