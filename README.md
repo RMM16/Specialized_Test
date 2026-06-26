@@ -15,15 +15,20 @@ Completed:
   triggers) and a portable `app_config_model` that validates it
 - portable `app_logic` (printing-enabled state, start/stop/hello trigger
   decisions) and `can_formatter` (timestamp, std/extended ID, DLC, payload),
-  both Zephyr-free and compiled into the app, but not yet wired to runtime
+  both Zephyr-free
 - 26 `ztest` unit cases covering `app_config_model`, `app_logic` and
   `can_formatter` on the `unit_testing` platform
 - periodic CAN TX: the three messages from build-time config are sent on
   `native_sim`'s loopback CAN device with a random payload, each on its own
   configured period, via `runtime.c`
-- CI builds the app for `native_sim`, runs it (checking for boot, config
-  validation and periodic TX output), and runs the unit tests on every push
-  (see
+- CAN RX printer: every received frame (the loopback of our own TX, for
+  now) is converted to the portable `app_can_message` and printed via
+  `can_formatter`, on its own consumer thread reading a `k_msgq`. Not yet
+  filtered by `app_logic`'s start/stop/hello decisions, that lands in
+  Branch 8.
+- CI builds the app for `native_sim`, runs it (checking boot, config
+  validation, periodic TX and the formatted RX output), and runs the unit
+  tests on every push (see
   [.github/workflows/build-and-test.yml](.github/workflows/build-and-test.yml))
 
 Validated output:
@@ -33,8 +38,9 @@ Validated output:
 Specialized Test booted on native_sim
 Build-time configuration validated
 CAN TX sent ID 0x102 DLC 8
+[260 ms] ID=0x102 (STD) DLC=8 DATA=3B DB 31 CC B6 D5 08 AA
 CAN TX sent ID 0x101 DLC 8
-CAN TX sent ID 0x100 DLC 8
+[510 ms] ID=0x101 (STD) DLC=8 DATA=E1 BE 87 E4 7B 88 AE B1
 ```
 
 Run the unit tests with:
@@ -45,9 +51,8 @@ west twister -T Specialized_Test/tests/unit -p unit_testing
 
 Not implemented yet:
 
-- CAN RX and console formatting
 - optional start, stop and hello triggers wired to runtime
-- integration test on `native_sim` exercising real CAN traffic
+- integration test on `native_sim` exercising real CAN traffic end to end
 
 The complete implementation order is defined in [docs/plan.md](docs/plan.md).
 
@@ -124,13 +129,13 @@ kept in [docs/build.md](docs/build.md).
 ## Development workflow
 
 Each functionality is implemented in a short branch, validated, committed and
-then merged into `main`. After `feat/can-tx-periodic` is merged, continue
+then merged into `main`. After `feat/can-rx-uart-printer` is merged, continue
 with the next branch from [docs/plan.md](docs/plan.md):
 
 ```bash
 git switch main
 git pull --ff-only
-git switch -c feat/can-rx-uart-printer
+git switch -c feat/wire-triggers
 ```
 
 Do not commit `build/`, Python environments, IDE state, downloaded SDKs or

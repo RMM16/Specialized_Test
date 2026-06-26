@@ -30,5 +30,11 @@ int main(void)
 		k_panic();
 	}
 
+	ret = runtime_start_rx_printer();
+	if (ret != 0) {
+		printk("Failed to start CAN RX printer: %d\n", ret);
+		k_panic();
+	}
+
 	return 0;
 }
