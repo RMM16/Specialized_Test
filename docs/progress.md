@@ -208,9 +208,66 @@ when the configured start/stop/hello state says so."
 CI now also greps the captured boot output for a formatted RX line
 (`ID=0x10[012] (STD) DLC=8 DATA=...`), not just the raw TX log lines.
 
+## Branch 8: wire start/stop/hello triggers
+
+`feat/wire-triggers` connects the portable `app_logic` to the RX printer
+thread added in Branch 7. `runtime_start_rx_printer()` now takes
+`const struct app_config *config` and calls `app_logic_init()` once with
+`config->start_trigger`, `config->stop_trigger` and `config->hello_trigger`,
+storing the resulting `struct app_logic_state` in a module-static variable
+next to `rx_msgq` and `rx_printer_started`. `main.c` passes `&config`.
+
+In `rx_thread_entry()`, after converting the frame to `app_can_message`,
+`app_logic_handle_message()` decides the action:
+
+- `APP_LOGIC_ACTION_PRINT`: format with `can_formatter_format()` and
+  `printk()` it, same as before.
+- `APP_LOGIC_ACTION_HELLO`: `printk("hello specialized\n")`. The exact
+  greeting text is not specified anywhere in `docs/plan.md` beyond
+  "hello specialized" (also the name of the optional CLI trigger in the
+  exercise), so that literal string was chosen rather than inventing
+  different wording.
+- `APP_LOGIC_ACTION_NONE`: print nothing (this is what happens for the
+  start/stop control frames themselves, and for any frame while printing
+  is disabled).
+- `APP_LOGIC_ACTION_INVALID_ARGS`: not expected on this path since both
+  arguments are always valid local objects, but handled defensively with a
+  `printk()` warning instead of asserting or panicking, so a single
+  unexpected return value cannot take the RX thread down.
+
+Validated locally on `native_sim` (WSL2 west build, `ZEPHYR_TOOLCHAIN_VARIANT=host`):
+with the default Kconfig (all three triggers disabled), `printing_enabled`
+starts `true` and every loopback TX frame is still printed exactly as in
+Branch 7. With `-DCONFIG_APP_START_TRIGGER_ENABLE=y
+-DCONFIG_APP_STOP_TRIGGER_ENABLE=y -DCONFIG_APP_HELLO_TRIGGER_ENABLE=y`,
+`printing_enabled` starts `false` (a start trigger is configured) and,
+since nothing on the bus ever transmits the configured start ID `0x200`
+(only `0x100`/`0x101`/`0x102` are sent), no formatted RX line appears for
+the full 3-second run -- only the raw `CAN TX sent ID ...` lines from the
+TX side. This confirms the "blocked before start" half of the trigger
+behavior.
+
+What was *not* validated, locally or in CI: actually crossing the
+start/stop/hello transitions by injecting a frame with one of the trigger
+IDs. Doing that needs either a second CAN peer or a test-only frame
+injector wired into the build, neither of which exists yet -- that gap is
+explicitly left for Branch 9 (`test/native-sim-smoke`).
+
+CI mirrors the local validation: the existing "default configuration" run
+is untouched (still greps for the formatted RX lines, proving triggers-off
+behavior is unchanged), and a new step runs the already-built "alternate
+configuration" binary (all three triggers enabled) for 3 seconds and
+asserts that no formatted `ID=0x10[012] (STD) DLC=8 DATA=...` line appears,
+while the raw TX log lines still do.
+
+`tests/unit/` was not touched; the existing 26 `ztest` cases for
+`app_config_model`, `app_logic` and `can_formatter` still pass unchanged
+since `app_logic.c`'s public API did not change, only how `runtime.c`
+calls it.
+
 ## Next implementation step
 
-Create `feat/wire-triggers` and connect `app_logic_handle_message()` to the
-RX printer thread, so `start`, `stop` and `hello` actually gate and
-annotate what gets printed, per the functional cases in `docs/plan.md`.
+Create `test/native-sim-smoke` (Branch 9) for a minimal end-to-end
+integration scenario, ideally covering the start/stop/hello transitions
+that Branch 8 could not exercise in CI.
 

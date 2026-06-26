@@ -101,7 +101,29 @@ explicitos en `prj.conf`.
 `app_can_message`, impresion via `can_formatter`. Todavia sin pasar por
 `app_logic`: imprime todo lo recibido sin filtrar por triggers.
 
+## Rama 8 completada
+
+`feat/wire-triggers` conecto `app_logic_handle_message()` al hilo RX.
+`runtime_start_rx_printer()` ahora recibe `const struct app_config *config`,
+llama a `app_logic_init()` una vez con los 3 triggers y guarda el
+`struct app_logic_state` resultante en una variable estatica del modulo.
+Por cada frame recibido, la accion devuelta decide si se imprime
+formateado (`APP_LOGIC_ACTION_PRINT`), se imprime el saludo
+(`APP_LOGIC_ACTION_HELLO`, texto literal `"hello specialized"`) o no se
+imprime nada (`APP_LOGIC_ACTION_NONE`, incluidos los propios frames de
+control `start`/`stop`).
+
+Validado en local (WSL2, `west build` + `zephyr.exe`) que con la config
+por defecto (triggers deshabilitados) el comportamiento es igual a la
+Rama 7, y que con los 3 triggers habilitados (`-DCONFIG_APP_*_TRIGGER_ENABLE=y`)
+no se imprime ninguna linea formateada del loopback de TX, porque
+`printing_enabled` arranca en `false` y nadie transmite el ID `0x200` del
+`start_trigger`. No se valido la transicion real start/stop/hello (requiere
+un segundo peer CAN o un inyector de frames de test), eso queda como
+limitación conocida para la Rama 9.
+
 ## Siguiente hito
 
-La siguiente rama es `feat/wire-triggers`: conectar `app_logic_handle_message()`
-al hilo RX para que `start`/`stop`/`hello` controlen de verdad la impresion.
+La siguiente rama es `test/native-sim-smoke`: una validacion minima de
+integracion end-to-end, idealmente cubriendo las transiciones
+start/stop/hello que la Rama 8 no pudo ejercitar en CI.
