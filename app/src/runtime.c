@@ -9,6 +9,7 @@
 #include <zephyr/sys/printk.h>
 
 #include "specialized/app_can_message.h"
+#include "specialized/app_logic.h"
 #include "specialized/can_formatter.h"
 #include "specialized/runtime.h"
 
@@ -118,6 +119,7 @@ K_THREAD_STACK_DEFINE(rx_thread_stack, RX_THREAD_STACK_SIZE);
 
 static struct k_thread rx_thread_data;
 static bool rx_printer_started;
+static struct app_logic_state rx_logic_state;
 
 static void frame_to_message(const struct can_frame *frame, struct app_can_message *message)
 {
@@ -145,14 +147,31 @@ static void rx_thread_entry(void *arg1, void *arg2, void *arg3)
 
 		frame_to_message(&frame, &message);
 
-		if (can_formatter_format(&message, line, sizeof(line), NULL) ==
-		    CAN_FORMATTER_OK) {
-			printk("%s\n", line);
+		switch (app_logic_handle_message(&rx_logic_state, &message)) {
+		case APP_LOGIC_ACTION_PRINT:
+			if (can_formatter_format(&message, line, sizeof(line), NULL) ==
+			    CAN_FORMATTER_OK) {
+				printk("%s\n", line);
+			}
+			break;
+		case APP_LOGIC_ACTION_HELLO:
+			printk("hello specialized\n");
+			break;
+		case APP_LOGIC_ACTION_NONE:
+			break;
+		case APP_LOGIC_ACTION_INVALID_ARGS:
+		default:
+			/* Not expected on this path: rx_logic_state and message are
+			 * always valid local objects. Logged rather than treated as
+			 * fatal, since dropping one frame is not worth a panic.
+			 */
+			printk("app_logic_handle_message rejected its arguments\n");
+			break;
 		}
 	}
 }
 
-int runtime_start_rx_printer(void)
+int runtime_start_rx_printer(const struct app_config *config)
 {
 	/* Separate filters for standard and extended IDs: can_filter's IDE
 	 * flag is matched exactly, not masked, so a single filter cannot
@@ -162,12 +181,21 @@ int runtime_start_rx_printer(void)
 	const struct can_filter ext_filter = {.id = 0, .mask = 0, .flags = CAN_FILTER_IDE};
 	int ret;
 
+	if (config == NULL) {
+		return -EINVAL;
+	}
+
 	if (rx_printer_started) {
 		return 0;
 	}
 
 	if (!device_is_ready(can_dev)) {
 		return -ENODEV;
+	}
+
+	if (!app_logic_init(&rx_logic_state, &config->start_trigger, &config->stop_trigger,
+			     &config->hello_trigger)) {
+		return -EINVAL;
 	}
 
 	ret = can_add_rx_filter_msgq(can_dev, &rx_msgq, &std_filter);
