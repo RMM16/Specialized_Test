@@ -18,8 +18,12 @@ Completed:
   both Zephyr-free and compiled into the app, but not yet wired to runtime
 - 26 `ztest` unit cases covering `app_config_model`, `app_logic` and
   `can_formatter` on the `unit_testing` platform
-- CI builds the app for `native_sim`, runs it, and runs the unit tests on
-  every push (see
+- periodic CAN TX: the three messages from build-time config are sent on
+  `native_sim`'s loopback CAN device with a random payload, each on its own
+  configured period, via `runtime.c`
+- CI builds the app for `native_sim`, runs it (checking for boot, config
+  validation and periodic TX output), and runs the unit tests on every push
+  (see
   [.github/workflows/build-and-test.yml](.github/workflows/build-and-test.yml))
 
 Validated output:
@@ -28,6 +32,9 @@ Validated output:
 *** Booting Zephyr OS build v4.4.0 ***
 Specialized Test booted on native_sim
 Build-time configuration validated
+CAN TX sent ID 0x102 DLC 8
+CAN TX sent ID 0x101 DLC 8
+CAN TX sent ID 0x100 DLC 8
 ```
 
 Run the unit tests with:
@@ -38,7 +45,6 @@ west twister -T Specialized_Test/tests/unit -p unit_testing
 
 Not implemented yet:
 
-- periodic CAN TX
 - CAN RX and console formatting
 - optional start, stop and hello triggers wired to runtime
 - integration test on `native_sim` exercising real CAN traffic
@@ -118,13 +124,13 @@ kept in [docs/build.md](docs/build.md).
 ## Development workflow
 
 Each functionality is implemented in a short branch, validated, committed and
-then merged into `main`. After `test/unit-coverage` is merged, continue with
-the next branch from [docs/plan.md](docs/plan.md):
+then merged into `main`. After `feat/can-tx-periodic` is merged, continue
+with the next branch from [docs/plan.md](docs/plan.md):
 
 ```bash
 git switch main
 git pull --ff-only
-git switch -c feat/can-tx-periodic
+git switch -c feat/can-rx-uart-printer
 ```
 
 Do not commit `build/`, Python environments, IDE state, downloaded SDKs or

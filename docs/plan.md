@@ -414,6 +414,10 @@ Implementar los 3 mensajes periodicos TX con payload aleatorio.
 
 Se observa actividad TX recurrente de los 3 mensajes.
 
+### Estado
+
+Completada en rama, validada por CI (logs de TX de los 3 IDs) y en local. Pendiente de merge a `main`.
+
 ## 6.7 Rama 7
 
 - Rama: `feat/can-rx-uart-printer`
