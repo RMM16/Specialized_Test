@@ -16,7 +16,10 @@ Completed:
 - portable `app_logic` (printing-enabled state, start/stop/hello trigger
   decisions) and `can_formatter` (timestamp, std/extended ID, DLC, payload),
   both Zephyr-free and compiled into the app, but not yet wired to runtime
-- CI builds the app for `native_sim` on every push (see
+- 26 `ztest` unit cases covering `app_config_model`, `app_logic` and
+  `can_formatter` on the `unit_testing` platform
+- CI builds the app for `native_sim`, runs it, and runs the unit tests on
+  every push (see
   [.github/workflows/build-and-test.yml](.github/workflows/build-and-test.yml))
 
 Validated output:
@@ -27,12 +30,18 @@ Specialized Test booted on native_sim
 Build-time configuration validated
 ```
 
+Run the unit tests with:
+
+```bash
+west twister -T Specialized_Test/tests/unit -p unit_testing
+```
+
 Not implemented yet:
 
 - periodic CAN TX
 - CAN RX and console formatting
 - optional start, stop and hello triggers wired to runtime
-- unit and integration tests
+- integration test on `native_sim` exercising real CAN traffic
 
 The complete implementation order is defined in [docs/plan.md](docs/plan.md).
 
@@ -109,13 +118,13 @@ kept in [docs/build.md](docs/build.md).
 ## Development workflow
 
 Each functionality is implemented in a short branch, validated, committed and
-then merged into `main`. After `feat/portable-logic` is merged, continue with
+then merged into `main`. After `test/unit-coverage` is merged, continue with
 the next branch from [docs/plan.md](docs/plan.md):
 
 ```bash
 git switch main
 git pull --ff-only
-git switch -c test/unit-coverage
+git switch -c feat/can-tx-periodic
 ```
 
 Do not commit `build/`, Python environments, IDE state, downloaded SDKs or

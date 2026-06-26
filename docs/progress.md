@@ -142,9 +142,33 @@ original, inconsistent DLC. They are compiled into the app via CMake to
 confirm they build and link, but are not yet called from `main.c`/runtime;
 that wiring happens in Branches 6-8 alongside CAN TX/RX.
 
+## Branch 5: unit coverage
+
+`test/unit-coverage` added 26 `ztest` cases on the `unit_testing` platform:
+10 for `app_config_model` (defaults, zero period, out-of-range standard and
+extended IDs, trigger collisions, TX/trigger collisions, a standard and an
+extended ID sharing a numeric value not colliding, invalid CAN bus
+parameters, a NULL config pointer), 10 for `app_logic` (initial print state
+with and without a start trigger, start/stop/hello decisions, a standard and
+an extended frame with the same numeric ID not cross-matching a trigger,
+NULL arguments) and 6 for `can_formatter` (standard/extended output,
+zero-length and full payload, small-buffer truncation, invalid DLC, NULL
+message, length-only query).
+
+The `tests/unit/CMakeLists.txt` structure (the `unit_testing` board check,
+`find_package(Zephyr COMPONENTS unittest)`, `testbinary` target) was
+confirmed against the real Zephyr v4.4.0 sources already fetched into the
+local workspace, instead of guessed. `west twister -T tests/unit -p
+unit_testing` passes 26/26 locally and the equivalent CI step, dropped in
+Branch 3 because the directory was still empty, is back and green.
+
+Also fixed in this branch: a `can_formatter_format()` internal `snprintf()`
+failure was being reported as `CAN_FORMATTER_ERR_NULL_ARG`; it now has its
+own `CAN_FORMATTER_ERR_FORMAT_FAILED`.
+
 ## Next implementation step
 
-Create `test/unit-coverage` and add ztest coverage for `app_config_model`,
-`app_logic` and `can_formatter` as described in `docs/plan.md`, before
-touching real CAN traffic or concurrency.
+Create `feat/can-tx-periodic` and implement the three periodic CAN TX
+messages with random payloads on `native_sim` loopback, using the
+build-time TX configuration from Branch 3.
 
