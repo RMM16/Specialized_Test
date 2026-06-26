@@ -83,7 +83,7 @@ jobs:
             -DCONFIG_APP_STOP_TRIGGER_ENABLE=y \
             -DCONFIG_APP_HELLO_TRIGGER_ENABLE=y
 
-      # Unit test step (west twister -T tests/unit) returns in Branch 5,
-      # once tests/unit has real CMakeLists.txt/prj.conf/testcase.yaml.
-      # Keeping it out for now avoids a misleading red annotation on an
-      # empty test directory.
+      - name: Run unit tests on unit_testing platform
+        run: |
+          source ~/.venv-zephyr/bin/activate
+          west twister -T Specialized_Test/tests/unit -p unit_testing --inline-logs -v
