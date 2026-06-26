@@ -38,8 +38,31 @@ static void tx_work_handler(struct k_work *work)
 	k_work_reschedule(dwork, K_MSEC(ctx->period_ms));
 }
 
+static int configure_can_bus(const struct app_can_bus_config *can)
+{
+	struct can_timing timing;
+	int ret;
+
+	/* can_set_mode()/can_set_timing() must run before can_start(); the
+	 * driver rejects them with -EBUSY once the device is started.
+	 */
+	ret = can_set_mode(can_dev, can->loopback ? CAN_MODE_LOOPBACK : 0);
+	if (ret != 0) {
+		return ret;
+	}
+
+	ret = can_calc_timing(can_dev, &timing, can->bitrate, can->sample_point_permille);
+	if (ret < 0) {
+		return ret;
+	}
+
+	return can_set_timing(can_dev, &timing);
+}
+
 int runtime_start_periodic_tx(const struct app_config *config)
 {
+	int ret;
+
 	if (config == NULL) {
 		return -EINVAL;
 	}
@@ -48,8 +71,12 @@ int runtime_start_periodic_tx(const struct app_config *config)
 		return -ENODEV;
 	}
 
-	int ret = can_start(can_dev);
+	ret = configure_can_bus(&config->can);
+	if (ret != 0) {
+		return ret;
+	}
 
+	ret = can_start(can_dev);
 	if (ret != 0 && ret != -EALREADY) {
 		return ret;
 	}

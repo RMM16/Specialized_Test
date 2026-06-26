@@ -171,9 +171,12 @@ own `CAN_FORMATTER_ERR_FORMAT_FAILED`.
 `feat/can-tx-periodic` added `runtime.c`/`runtime.h`, the first Zephyr-
 dependent module beyond `main.c` and `zephyr_app_config.c`. It gets the CAN
 device from the `zephyr,canbus` devicetree chosen node (`can_loopback0` on
-`native_sim`, enabled by default in `native_sim.dts`), starts it, and
-schedules one `k_work_delayable` per configured TX message, each
-resubmitting itself at its own period and filling its payload with
+`native_sim`, enabled by default in `native_sim.dts`), applies
+`config->can` (loopback mode via `can_set_mode()`, bitrate and sample point
+via `can_calc_timing()` + `can_set_timing()`, both required before
+`can_start()` since the driver rejects them with `-EBUSY` afterwards),
+starts it, and schedules one `k_work_delayable` per configured TX message,
+each resubmitting itself at its own period and filling its payload with
 `sys_rand_get()`.
 
 Two non-obvious Kconfig requirements found by actually building rather than
