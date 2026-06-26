@@ -114,7 +114,11 @@ int runtime_start_periodic_tx(const struct app_config *config)
 	return 0;
 }
 
-CAN_MSGQ_DEFINE(rx_msgq, 10);
+/* The RX queue depth is a build-time setting, so the msgq uses the Kconfig
+ * value directly. The same value is copied into app_config and validated at
+ * boot, keeping the documented configuration and runtime storage aligned.
+ */
+CAN_MSGQ_DEFINE(rx_msgq, CONFIG_APP_CAN_RX_QUEUE_DEPTH);
 K_THREAD_STACK_DEFINE(rx_thread_stack, RX_THREAD_STACK_SIZE);
 
 static struct k_thread rx_thread_data;

@@ -23,7 +23,8 @@ Completed:
   configured period, via `runtime.c`
 - CAN RX printer: every received frame (the loopback of our own TX, for
   now) is converted to the portable `app_can_message` and routed through
-  `app_logic`, on its own consumer thread reading a `k_msgq`
+  `app_logic`, on its own consumer thread reading a build-time-sized
+  `k_msgq`
 - optional start, stop and hello triggers wired end to end: `runtime.c`
   initializes `app_logic_state` from the build-time config and lets it
   decide, per received frame, whether to print the formatted line, print a
@@ -136,13 +137,14 @@ kept in [docs/build.md](docs/build.md).
 ## Development workflow
 
 Each functionality is implemented in a short branch, validated, committed and
-then merged into `main`. With `feat/can-rx-uart-printer` merged, the next
-branch from [docs/plan.md](docs/plan.md) is `feat/wire-triggers`:
+then merged into `main`. With `feat/wire-triggers` merged, the remaining
+follow-up from [docs/plan.md](docs/plan.md) is an optional native_sim smoke
+scenario:
 
 ```bash
 git switch main
 git pull --ff-only
-git switch -c feat/wire-triggers
+git switch -c test/native-sim-smoke
 ```
 
 Do not commit `build/`, Python environments, IDE state, downloaded SDKs or
