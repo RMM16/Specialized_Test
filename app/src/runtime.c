@@ -19,6 +19,7 @@ struct tx_context {
 };
 
 static struct tx_context tx_contexts[APP_CONFIG_TX_COUNT];
+static bool runtime_started;
 
 static void tx_work_handler(struct k_work *work)
 {
@@ -67,6 +68,15 @@ int runtime_start_periodic_tx(const struct app_config *config)
 		return -EINVAL;
 	}
 
+	/* Not designed to reconfigure a running bus: can_set_mode() and
+	 * can_set_timing() reject calls once the device is started, so a
+	 * second call would otherwise fail with -EBUSY instead of being a
+	 * harmless no-op.
+	 */
+	if (runtime_started) {
+		return 0;
+	}
+
 	if (!device_is_ready(can_dev)) {
 		return -ENODEV;
 	}
@@ -92,6 +102,8 @@ int runtime_start_periodic_tx(const struct app_config *config)
 		k_work_init_delayable(&ctx->work, tx_work_handler);
 		k_work_schedule(&ctx->work, K_MSEC(ctx->period_ms));
 	}
+
+	runtime_started = true;
 
 	return 0;
 }
