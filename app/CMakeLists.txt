@@ -9,4 +9,6 @@ target_sources(app PRIVATE
 	src/main.c
 	src/app_config_model.c
 	src/zephyr_app_config.c
+	src/app_logic.c
+	src/can_formatter.c
 )
