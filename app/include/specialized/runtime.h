@@ -10,11 +10,12 @@
 int runtime_start_periodic_tx(const struct app_config *config);
 
 /* Starts a consumer thread that receives every CAN frame (loopback of our
- * own TX for now), converts it to the portable app_can_message and prints
- * it formatted via can_formatter. Does not yet apply app_logic's
- * start/stop/hello decisions; that lands in Branch 8. Returns 0 on success,
- * a negative errno on failure.
+ * own TX for now), converts it to the portable app_can_message and routes
+ * it through app_logic_handle_message() using the start/stop/hello triggers
+ * from config. Prints the formatted frame, a hello greeting, or nothing,
+ * depending on the action app_logic returns. Returns 0 on success, a
+ * negative errno on failure.
  */
-int runtime_start_rx_printer(void);
+int runtime_start_rx_printer(const struct app_config *config);
 
 #endif /* SPECIALIZED_RUNTIME_H_ */

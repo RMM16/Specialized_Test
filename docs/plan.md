@@ -482,6 +482,18 @@ Conectar la logica portable con el runtime de Zephyr.
 
 Cada trigger altera el comportamiento esperado y no introduce regresiones.
 
+### Estado
+
+Completada en rama. Validado en local (WSL2/native_sim): config por defecto
+(triggers deshabilitados) imprime todo igual que en la Rama 7; config
+alternativa (los 3 triggers habilitados) no imprime nada del loopback de TX
+porque `printing_enabled` arranca en `false` y nunca llega el ID `0x200`
+del `start_trigger`. Validado tambien en CI con un nuevo step que ejecuta
+el build alternativo y comprueba la ausencia de lineas RX formateadas. No
+validado: la transicion real al recibir `start`/`stop`/`hello` (necesita un
+segundo peer CAN o un inyector de frames), queda como limitacion conocida
+para la Rama 9. Pendiente de merge a `main`.
+
 ## 6.9 Rama 9
 
 - Rama: `test/native-sim-smoke`

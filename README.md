@@ -22,13 +22,18 @@ Completed:
   `native_sim`'s loopback CAN device with a random payload, each on its own
   configured period, via `runtime.c`
 - CAN RX printer: every received frame (the loopback of our own TX, for
-  now) is converted to the portable `app_can_message` and printed via
-  `can_formatter`, on its own consumer thread reading a `k_msgq`. Not yet
-  filtered by `app_logic`'s start/stop/hello decisions, that lands in
-  Branch 8.
+  now) is converted to the portable `app_can_message` and routed through
+  `app_logic`, on its own consumer thread reading a `k_msgq`
+- optional start, stop and hello triggers wired end to end: `runtime.c`
+  initializes `app_logic_state` from the build-time config and lets it
+  decide, per received frame, whether to print the formatted line, print a
+  hello greeting, or stay silent
 - CI builds the app for `native_sim`, runs it (checking boot, config
   validation, periodic TX and the formatted RX output), and runs the unit
-  tests on every push (see
+  tests on every push; it also builds the alternate configuration (all
+  three triggers enabled) and checks that, with the start trigger gating
+  printing and no real `0x200` frame ever transmitted, none of the TX
+  loopback frames get printed (see
   [.github/workflows/build-and-test.yml](.github/workflows/build-and-test.yml))
 
 Validated output:
@@ -51,8 +56,10 @@ west twister -T Specialized_Test/tests/unit -p unit_testing
 
 Not implemented yet:
 
-- optional start, stop and hello triggers wired to runtime
 - integration test on `native_sim` exercising real CAN traffic end to end
+  (actually crossing the start/stop/hello transitions needs a second CAN
+  peer or a test-only frame injector; CI today only proves the
+  "blocked before start" half of the trigger behavior)
 
 The complete implementation order is defined in [docs/plan.md](docs/plan.md).
 
