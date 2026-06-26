@@ -15,6 +15,7 @@ enum can_formatter_result {
 	CAN_FORMATTER_ERR_NULL_ARG,
 	CAN_FORMATTER_ERR_INVALID_DLC,
 	CAN_FORMATTER_ERR_BUFFER_TOO_SMALL,
+	CAN_FORMATTER_ERR_FORMAT_FAILED,
 };
 
 /* Formats message into buf, NUL-terminated on CAN_FORMATTER_OK.
