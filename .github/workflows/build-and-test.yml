@@ -95,10 +95,9 @@ jobs:
         # (the periodic TX uses 0x100/0x101/0x102, and there is no peer to
         # inject a real start frame in this CI job), so the formatted RX
         # lines for the TX loopback must never appear. This only proves the
-        # "blocked before start" half of the acceptance criterion; actually
-        # crossing the start/stop/hello transitions would need a second CAN
-        # peer (or a test-only frame injector) and is left as a known gap,
-        # to be addressed by the Branch 9 native_sim smoke scenario.
+        # "blocked before start" half of the acceptance criterion; the
+        # smoke scenario below exercises the full start/hello/stop
+        # lifecycle instead.
         run: |
           timeout 3 ./build-alt/zephyr/zephyr.exe > native_sim_alt_output.log 2>&1 || true
           cat native_sim_alt_output.log
@@ -106,6 +105,44 @@ jobs:
           grep -q "Build-time configuration validated" native_sim_alt_output.log
           grep -q "CAN TX sent ID 0x100" native_sim_alt_output.log
           ! grep -qE "ID=0x10[012] \(STD\) DLC=8 DATA=" native_sim_alt_output.log
+
+      - name: Build and run the native_sim smoke scenario
+        # prj_smoke.conf enables all three triggers plus the one-shot
+        # injector (runtime_start_smoke_injector), which sends the start,
+        # hello and stop trigger IDs over the loopback bus itself -- the
+        # only way to exercise the full trigger lifecycle on native_sim
+        # without a second CAN bus peer. Verifies not just that the right
+        # lines appear, but that every formatted RX line falls between the
+        # injected start and stop markers, i.e. printing was actually
+        # gated by the triggers and not just always-on or always-off.
+        run: |
+          source ~/.venv-zephyr/bin/activate
+          west build -p always -b native_sim -d build-smoke Specialized_Test/app -- \
+            -DEXTRA_CONF_FILE=prj_smoke.conf
+          timeout 4 ./build-smoke/zephyr/zephyr.exe > native_sim_smoke_output.log 2>&1 || true
+          cat native_sim_smoke_output.log
+          grep -q "Smoke: sent start trigger ID 0x200" native_sim_smoke_output.log
+          grep -q "Smoke: sent hello trigger ID 0x202" native_sim_smoke_output.log
+          grep -q "Smoke: sent stop trigger ID 0x201" native_sim_smoke_output.log
+          grep -q "hello specialized" native_sim_smoke_output.log
+          grep -qE "ID=0x10[012] \(STD\) DLC=8 DATA=" native_sim_smoke_output.log
+          awk '
+            /Smoke: sent start trigger/ { start = NR }
+            /Smoke: sent stop trigger/ { stop = NR }
+            /ID=0x10[012] \(STD\) DLC=8 DATA=/ { rx_lines[NR] = 1 }
+            END {
+              if (!start || !stop) {
+                print "missing start or stop marker"; exit 1
+              }
+              for (line in rx_lines) {
+                if (line < start || line > stop) {
+                  print "formatted RX line at " line " falls outside the start/stop window"
+                  exit 1
+                }
+              }
+              print "OK: every formatted RX line falls within the start/stop window"
+            }
+          ' native_sim_smoke_output.log
 
       - name: Run unit tests on unit_testing platform
         run: |
