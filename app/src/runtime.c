@@ -219,3 +219,100 @@ int runtime_start_rx_printer(const struct app_config *config)
 
 	return 0;
 }
+
+#if defined(CONFIG_APP_SMOKE_TEST_INJECT_TRIGGERS)
+
+#define SMOKE_INJECTOR_STEP_DELAY_MS 600
+
+struct smoke_injector_context {
+	struct k_work_delayable work;
+	struct can_frame start_frame;
+	struct can_frame hello_frame;
+	struct can_frame stop_frame;
+	bool start_enabled;
+	bool hello_enabled;
+	bool stop_enabled;
+	int step;
+};
+
+static struct smoke_injector_context smoke_ctx;
+
+static void smoke_send(const struct can_frame *frame, const char *trigger_name)
+{
+	int ret = can_send(can_dev, frame, K_MSEC(100), NULL, NULL);
+
+	if (ret != 0) {
+		printk("Smoke: failed to send %s trigger ID 0x%x: %d\n", trigger_name, frame->id,
+		       ret);
+	} else {
+		printk("Smoke: sent %s trigger ID 0x%x\n", trigger_name, frame->id);
+	}
+}
+
+static void smoke_injector_work_handler(struct k_work *work)
+{
+	struct k_work_delayable *dwork = k_work_delayable_from_work(work);
+	struct smoke_injector_context *ctx =
+		CONTAINER_OF(dwork, struct smoke_injector_context, work);
+
+	switch (ctx->step) {
+	case 0:
+		if (ctx->start_enabled) {
+			smoke_send(&ctx->start_frame, "start");
+		}
+		break;
+	case 1:
+		if (ctx->hello_enabled) {
+			smoke_send(&ctx->hello_frame, "hello");
+		}
+		break;
+	case 2:
+		if (ctx->stop_enabled) {
+			smoke_send(&ctx->stop_frame, "stop");
+		}
+		return; /* one-shot sequence, nothing left to schedule */
+	}
+
+	ctx->step++;
+	k_work_reschedule(dwork, K_MSEC(SMOKE_INJECTOR_STEP_DELAY_MS));
+}
+
+static struct can_frame trigger_to_frame(const struct app_trigger_config *trigger)
+{
+	return (struct can_frame){
+		.id = trigger->id,
+		.flags = trigger->extended_id ? CAN_FRAME_IDE : 0,
+		.dlc = 0,
+	};
+}
+
+int runtime_start_smoke_injector(const struct app_config *config)
+{
+	if (config == NULL) {
+		return -EINVAL;
+	}
+
+	smoke_ctx.start_frame = trigger_to_frame(&config->start_trigger);
+	smoke_ctx.hello_frame = trigger_to_frame(&config->hello_trigger);
+	smoke_ctx.stop_frame = trigger_to_frame(&config->stop_trigger);
+	smoke_ctx.start_enabled = config->start_trigger.enabled;
+	smoke_ctx.hello_enabled = config->hello_trigger.enabled;
+	smoke_ctx.stop_enabled = config->stop_trigger.enabled;
+	smoke_ctx.step = 0;
+
+	k_work_init_delayable(&smoke_ctx.work, smoke_injector_work_handler);
+	k_work_schedule(&smoke_ctx.work, K_MSEC(SMOKE_INJECTOR_STEP_DELAY_MS));
+
+	return 0;
+}
+
+#else
+
+int runtime_start_smoke_injector(const struct app_config *config)
+{
+	ARG_UNUSED(config);
+
+	return 0;
+}
+
+#endif /* CONFIG_APP_SMOKE_TEST_INJECT_TRIGGERS */

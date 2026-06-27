@@ -36,5 +36,11 @@ int main(void)
 		k_panic();
 	}
 
+	ret = runtime_start_smoke_injector(&config);
+	if (ret != 0) {
+		printk("Failed to start smoke trigger injector: %d\n", ret);
+		k_panic();
+	}
+
 	return 0;
 }

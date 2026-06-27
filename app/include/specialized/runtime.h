@@ -18,4 +18,12 @@ int runtime_start_periodic_tx(const struct app_config *config);
  */
 int runtime_start_rx_printer(const struct app_config *config);
 
+/* Only does something when CONFIG_APP_SMOKE_TEST_INJECT_TRIGGERS=y: sends
+ * the enabled start/hello/stop trigger IDs once each, a fixed delay apart,
+ * over the loopback CAN bus. This is the only way to exercise the full
+ * trigger lifecycle on native_sim without a second bus peer; it is a no-op
+ * otherwise. Returns 0 on success, a negative errno on failure.
+ */
+int runtime_start_smoke_injector(const struct app_config *config);
+
 #endif /* SPECIALIZED_RUNTIME_H_ */
