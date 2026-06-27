@@ -519,6 +519,10 @@ Tener una validacion minima de integracion end-to-end.
 
 La integracion general funciona en local sin hardware.
 
+### Estado
+
+Completada en rama, validada por CI (escenario smoke con verificacion de orden via `awk`) y en local. Pendiente de merge a `main`.
+
 ## 6.10 Rama 10
 
 - Rama: `docs/setup-build-guide`

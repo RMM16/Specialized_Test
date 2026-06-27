@@ -122,8 +122,20 @@ no se imprime ninguna linea formateada del loopback de TX, porque
 un segundo peer CAN o un inyector de frames de test), eso queda como
 limitación conocida para la Rama 9.
 
+## Rama 9 completada
+
+`test/native-sim-smoke` cerro la limitacion conocida de la Rama 8: como
+`can_loopback0` se loopea a si mismo, la propia app puede inyectarse los
+frames de trigger. `CONFIG_APP_SMOKE_TEST_INJECT_TRIGGERS` (solo activo en
+`app/prj_smoke.conf`) anade `runtime_start_smoke_injector()`, una secuencia
+`k_work_delayable` que envia `start`/`hello`/`stop` con 600 ms de separacion.
+Un solo run de `native_sim` muestra el ciclo completo en orden: TX sin
+imprimir, `start`, TX empieza a imprimirse, `hello` -> saludo, `stop`, TX
+deja de imprimirse otra vez. CI valida con `awk` que cada linea RX
+formateada cae entre las marcas de `start` y `stop`, no solo que el texto
+aparezca.
+
 ## Siguiente hito
 
-La siguiente rama es `test/native-sim-smoke`: una validacion minima de
-integracion end-to-end, idealmente cubriendo las transiciones
-start/stop/hello que la Rama 8 no pudo ejercitar en CI.
+La siguiente rama es `docs/setup-build-guide`: revision final de
+documentacion para entrega.

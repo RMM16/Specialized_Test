@@ -265,9 +265,32 @@ while the raw TX log lines still do.
 since `app_logic.c`'s public API did not change, only how `runtime.c`
 calls it.
 
+## Branch 9: native_sim smoke scenario
+
+`test/native-sim-smoke` closed the gap left by Branch 8: with no second CAN
+bus peer available, there was no way to actually cross the start/stop/hello
+transitions in CI, only to prove printing stayed blocked.
+
+Since `can_loopback0` loops everything back to its own RX filters, the app
+can inject the trigger frames itself. `CONFIG_APP_SMOKE_TEST_INJECT_TRIGGERS`
+(off by default, only set in the new `app/prj_smoke.conf` overlay) adds
+`runtime_start_smoke_injector()`: a one-shot `k_work_delayable` sequence that
+sends the enabled start, hello and stop trigger IDs 600 ms apart. Guarded by
+`#if defined(CONFIG_APP_SMOKE_TEST_INJECT_TRIGGERS)` so it compiles to
+nothing -- not just a runtime no-op -- in every other configuration,
+including the default and alternate builds already in CI.
+
+A single `native_sim` run with `prj_smoke.conf` now shows the entire
+lifecycle in order: periodic TX with no RX output, the start frame, RX
+output resuming, the hello frame, `hello specialized`, the stop frame, and
+RX output stopping again. CI does not just grep for those lines -- an `awk`
+check confirms every formatted RX line's position falls between the start
+and stop marker lines, i.e. the gating is real, not coincidental ordering.
+
 ## Next implementation step
 
-Create `test/native-sim-smoke` (Branch 9) for a minimal end-to-end
-integration scenario, ideally covering the start/stop/hello transitions
-that Branch 8 could not exercise in CI.
+Branch 10 (`docs/setup-build-guide`): finish the documentation pass for
+delivery -- this file, `docs/approach.md`, `docs/plan.md` and the README
+already track each branch as it lands, so what is left is a final read-
+through for a reviewer seeing the repository for the first time.
 
