@@ -122,4 +122,23 @@ config APP_HELLO_TRIGGER_EXTENDED_ID
 
 endmenu
 
+menu "Smoke test (native_sim only)"
+
+config APP_SMOKE_TEST_INJECT_TRIGGERS
+	bool "Inject start/hello/stop trigger frames once after boot"
+	default n
+	help
+	  Sends the configured start, hello and stop trigger CAN IDs once
+	  each, a fixed delay apart, shortly after boot (only the ones with
+	  their *_TRIGGER_ENABLE option on). This is the only way to
+	  exercise the full start/stop/hello lifecycle on native_sim's
+	  loopback CAN device without a second physical bus peer.
+
+	  Intended only for the native_sim smoke scenario
+	  (test/native-sim-smoke / prj_smoke.conf). Never enable this on
+	  real hardware: it injects traffic that looks like it came from
+	  another node on the bus.
+
+endmenu
+
 source "Kconfig.zephyr"

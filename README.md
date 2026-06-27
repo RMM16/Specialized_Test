@@ -29,12 +29,17 @@ Completed:
   initializes `app_logic_state` from the build-time config and lets it
   decide, per received frame, whether to print the formatted line, print a
   hello greeting, or stay silent
+- native_sim smoke scenario (`app/prj_smoke.conf` + `runtime_start_smoke_injector()`):
+  with all three triggers enabled, the app sends its own start, hello and
+  stop trigger frames once each over the loopback bus, proving the full
+  trigger lifecycle end to end on a single CAN device, no second bus peer
+  needed
 - CI builds the app for `native_sim`, runs it (checking boot, config
-  validation, periodic TX and the formatted RX output), and runs the unit
-  tests on every push; it also builds the alternate configuration (all
-  three triggers enabled) and checks that, with the start trigger gating
-  printing and no real `0x200` frame ever transmitted, none of the TX
-  loopback frames get printed (see
+  validation, periodic TX and the formatted RX output), runs the unit
+  tests, builds the alternate configuration (all three triggers enabled,
+  checking printing stays blocked with no real `0x200` frame transmitted),
+  and builds + runs the smoke scenario, verifying every formatted RX line
+  falls between the injected start and stop markers (see
   [.github/workflows/build-and-test.yml](.github/workflows/build-and-test.yml))
 
 Validated output:
@@ -57,10 +62,9 @@ west twister -T Specialized_Test/tests/unit -p unit_testing
 
 Not implemented yet:
 
-- integration test on `native_sim` exercising real CAN traffic end to end
-  (actually crossing the start/stop/hello transitions needs a second CAN
-  peer or a test-only frame injector; CI today only proves the
-  "blocked before start" half of the trigger behavior)
+- a real second CAN bus peer (the smoke scenario injects trigger frames
+  from the same node being tested, which is enough to validate the
+  application's logic but not a substitute for hardware-in-the-loop testing)
 
 The complete implementation order is defined in [docs/plan.md](docs/plan.md).
 
@@ -137,14 +141,13 @@ kept in [docs/build.md](docs/build.md).
 ## Development workflow
 
 Each functionality is implemented in a short branch, validated, committed and
-then merged into `main`. With `feat/wire-triggers` merged, the remaining
-follow-up from [docs/plan.md](docs/plan.md) is an optional native_sim smoke
-scenario:
+then merged into `main`. With `test/native-sim-smoke` merged, the remaining
+branch from [docs/plan.md](docs/plan.md) is the final documentation pass:
 
 ```bash
 git switch main
 git pull --ff-only
-git switch -c test/native-sim-smoke
+git switch -c docs/setup-build-guide
 ```
 
 Do not commit `build/`, Python environments, IDE state, downloaded SDKs or
