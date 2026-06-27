@@ -135,7 +135,10 @@ jobs:
                 print "missing start or stop marker"; exit 1
               }
               for (line in rx_lines) {
-                if (line < start || line > stop) {
+                # for (k in array) keys are plain strings, not numeric
+                # strings, so "10" < 8 compares lexicographically as
+                # true unless forced back to numeric with +0.
+                if (line + 0 < start || line + 0 > stop) {
                   print "formatted RX line at " line " falls outside the start/stop window"
                   exit 1
                 }
