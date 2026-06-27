@@ -287,10 +287,9 @@ RX output stopping again. CI does not just grep for those lines -- an `awk`
 check confirms every formatted RX line's position falls between the start
 and stop marker lines, i.e. the gating is real, not coincidental ordering.
 
-## Next implementation step
+## Delivery status
 
-Branch 10 (`docs/setup-build-guide`): finish the documentation pass for
-delivery -- this file, `docs/approach.md`, `docs/plan.md` and the README
-already track each branch as it lands, so what is left is a final read-
-through for a reviewer seeing the repository for the first time.
+The native_sim implementation, unit tests, and smoke scenario are complete
+and green in CI. Remaining future work is validation on a physical CAN
+target.
 

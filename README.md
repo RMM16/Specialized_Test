@@ -3,6 +3,34 @@
 Firmware exercise implemented with Zephyr RTOS and designed to be developed
 and tested without a physical microcontroller.
 
+## What this is
+
+This repository is a take-home firmware exercise (the original brief is in
+[docs/input/](docs/input/)) asking for a Zephyr application that, with
+build-time configuration: periodically transmits 3 CAN messages with random
+payloads, receives and prints CAN frames over UART/console (timestamp, CAN
+ID, DLC, data), and supports optional `start`/`stop`/`hello specialized`
+triggers that gate the printing -- all backed by unit tests.
+
+No physical board was available, so the whole exercise is solved and
+validated on Zephyr's `native_sim` board, using its CAN loopback driver as
+the bus: the app's own periodic TX is what gets received and printed, and
+(in the smoke scenario) the app injects its own trigger frames to exercise
+the `start`/`stop`/`hello` transitions. What is intentionally *not* done is
+anything that requires real hardware: no physical CAN transceiver, no real
+second bus peer sending trigger frames, no board-specific drivers or
+devicetree overlays beyond what `native_sim` already provides. The
+"Not implemented yet" note further down spells out the one concrete gap
+that follows from this (hardware-in-the-loop validation of the trigger
+frames).
+
+The implementation is split into ten short, independently validated
+branches (scaffold, boot, build-time config, portable logic, unit tests,
+periodic TX, RX printer, triggers, smoke scenario, and this documentation
+pass), all merged into `main` -- see [docs/plan.md](docs/plan.md) for the
+full roadmap and [docs/progress.md](docs/progress.md) for what was actually
+built in each one.
+
 ## Current status
 
 Completed:
@@ -59,6 +87,22 @@ Run the unit tests with:
 ```bash
 west twister -T Specialized_Test/tests/unit -p unit_testing
 ```
+
+Run the native_sim smoke scenario (the full start/hello/stop trigger
+lifecycle, self-injected over the loopback CAN bus) with:
+
+```bash
+west build -p always -b native_sim -d build-smoke Specialized_Test/app -- \
+  -DEXTRA_CONF_FILE=prj_smoke.conf
+./build-smoke/zephyr/zephyr.exe
+```
+
+Stop it with `Ctrl+C`. Within the first couple of seconds the log shows
+periodic TX with no RX output, the injected start trigger, RX output
+resuming, the injected hello trigger (`hello specialized`), the injected
+stop trigger, and RX output stopping again -- the same sequence CI verifies
+with the `awk` ordering check in
+[.github/workflows/build-and-test.yml](.github/workflows/build-and-test.yml).
 
 Not implemented yet:
 
@@ -141,13 +185,14 @@ kept in [docs/build.md](docs/build.md).
 ## Development workflow
 
 Each functionality is implemented in a short branch, validated, committed and
-then merged into `main`. With `test/native-sim-smoke` merged, the remaining
-branch from [docs/plan.md](docs/plan.md) is the final documentation pass:
+then merged into `main`; the full branch sequence (now all merged) is
+tracked in [docs/plan.md](docs/plan.md). For any future work on this
+codebase, follow the same pattern:
 
 ```bash
 git switch main
 git pull --ff-only
-git switch -c docs/setup-build-guide
+git switch -c <type>/<short-description>
 ```
 
 Do not commit `build/`, Python environments, IDE state, downloaded SDKs or
@@ -158,6 +203,8 @@ generated Zephyr workspaces.
 The firmware is written in C. CMake, Kconfig, Python and `west` are build and
 configuration tools required by Zephyr; they do not replace the C application.
 
-Portable business logic will avoid Zephyr headers. Only the runtime adapter,
-entry point and Zephyr configuration bridge will depend on Zephyr APIs. This
-allows unit testing on a PC and later reuse on a physical target.
+Portable business logic (`app_config_model`, `app_logic`, `can_formatter`)
+avoids Zephyr headers. Only the runtime adapter (`runtime.c`), entry point
+(`main.c`) and Zephyr configuration bridge (`zephyr_app_config.c`) depend on
+Zephyr APIs. This allows unit testing on a PC and later reuse on a physical
+target.

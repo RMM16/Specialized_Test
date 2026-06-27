@@ -135,7 +135,8 @@ deja de imprimirse otra vez. CI valida con `awk` que cada linea RX
 formateada cae entre las marcas de `start` y `stop`, no solo que el texto
 aparezca.
 
-## Siguiente hito
+## Estado de entrega
 
-La siguiente rama es `docs/setup-build-guide`: revision final de
-documentacion para entrega.
+Las ramas funcionales y la validacion native_sim estan completadas. El
+siguiente paso fuera del alcance de native_sim seria validar en hardware
+real.

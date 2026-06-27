@@ -298,7 +298,7 @@ La app compila con configuracion por defecto y con al menos una variante de conf
 
 ### Estado
 
-Completada en rama, validada por CI en `native_sim`. Pendiente de merge a `main`.
+Completada en rama, validada por CI en `native_sim`. Mergeada a `main`.
 
 ## 6.4 Rama 4
 
@@ -387,7 +387,7 @@ Todos los tests unitarios pasan en verde.
 
 ### Estado
 
-Completada en rama (26/26 tests en verde, local y CI). Pendiente de merge a `main`.
+Completada en rama (26/26 tests en verde, local y CI). Mergeada a `main`.
 
 ## 6.6 Rama 6
 
@@ -416,7 +416,7 @@ Se observa actividad TX recurrente de los 3 mensajes.
 
 ### Estado
 
-Completada en rama, validada por CI (logs de TX de los 3 IDs) y en local. Pendiente de merge a `main`.
+Completada en rama, validada por CI (logs de TX de los 3 IDs) y en local. Mergeada a `main`.
 
 ## 6.7 Rama 7
 
@@ -447,7 +447,7 @@ Los mensajes loopback aparecen impresos con el formato correcto.
 
 ### Estado
 
-Completada en rama, validada por CI (linea RX formateada) y en local. Pendiente de merge a `main`.
+Completada en rama, validada por CI (linea RX formateada) y en local. Mergeada a `main`.
 
 ## 6.8 Rama 8
 
@@ -492,7 +492,7 @@ del `start_trigger`. Validado tambien en CI con un nuevo step que ejecuta
 el build alternativo y comprueba la ausencia de lineas RX formateadas. No
 validado: la transicion real al recibir `start`/`stop`/`hello` (necesita un
 segundo peer CAN o un inyector de frames), queda como limitacion conocida
-para la Rama 9. Pendiente de merge a `main`.
+para la Rama 9. Mergeada a `main`.
 
 ## 6.9 Rama 9
 
@@ -521,7 +521,7 @@ La integracion general funciona en local sin hardware.
 
 ### Estado
 
-Completada en rama, validada por CI (escenario smoke con verificacion de orden via `awk`) y en local. Pendiente de merge a `main`.
+Completada en rama, validada por CI (escenario smoke con verificacion de orden via `awk`) y en local. Mergeada a `main`.
 
 ## 6.10 Rama 10
 
